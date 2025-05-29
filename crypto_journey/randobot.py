@@ -4,26 +4,28 @@ from lumibot.strategies.strategy import Strategy
 from datetime import datetime
 from colorama import Fore
 import random
+import sys
 
 
 class MLTrader(Strategy):
 
-    def initialize(self, cash_at_risk: float = 0.2, coin: str = "ETH"):
+    def initialize(self, cash_at_risk: float = 0.2, coin: str = "BTC", quote: str = "USDT"):
         self.set_market("24/7")
         self.sleeptime = "1D"
         self.last_trade = None
         self.cash_at_risk = cash_at_risk
         self.coin = coin
+        self.quote = quote
 
     def position_sizing(self):
         cash = self.get_cash()
         last_price = self.get_last_price(
             Asset(symbol=self.coin, asset_type=Asset.AssetType.CRYPTO),
-            quote=Asset(symbol="USD", asset_type="crypto"),
+            quote=Asset(symbol=self.quote, asset_type="crypto"),
         )
         # Added this to handle missing prices
         if last_price == None:
-            print(f"Warning: Could not get price for {self.coin}/USD")
+            print(f"Warning: Could not get price for {self.coin}/{self.quote}")
             quantity = 0
         else:
             quantity = cash * self.cash_at_risk / last_price
@@ -32,7 +34,7 @@ class MLTrader(Strategy):
     def on_trading_iteration(self):
         cash, last_price, quantity = self.position_sizing()
 
-        if last_price != None:
+        if last_price != None and quantity > 0:
             if cash > (quantity * last_price):
                 choice = random.choice([0, 1, 2])
 
@@ -46,7 +48,7 @@ class MLTrader(Strategy):
                         quantity,
                         "buy",
                         type="market",
-                        quote=Asset(symbol="USD", asset_type="crypto"),
+                        quote=Asset(symbol=self.quote, asset_type="crypto"),
                     )
                     print(Fore.LIGHTMAGENTA_EX + str(order) + Fore.RESET)
                     self.submit_order(order)
@@ -59,7 +61,7 @@ class MLTrader(Strategy):
                         quantity,
                         "sell",
                         type="market",
-                        quote=Asset(symbol="USD", asset_type="crypto"),
+                        quote=Asset(symbol=self.quote, asset_type="crypto"),
                     )
                     print(Fore.LIGHTMAGENTA_EX + str(order) + Fore.RESET)
                     self.submit_order(order)
@@ -67,37 +69,32 @@ class MLTrader(Strategy):
 
 
 if __name__ == "__main__":
-    start_date = datetime(2023, 1, 1)
-    end_date = datetime(2024, 1, 1)  # Shorter timeframe with more reliable data
-    exchange_id = "kraken"
-    kwargs = {
-        "exchange_id": exchange_id,
-    }
-    CcxtBacktesting.MIN_TIMESTEP = "day"
-    
-    # Use ETH instead of BTC as it has better data availability
-    coin = "ETH"
-    
     try:
-        results, strat_obj = MLTrader.run_backtest(
-            CcxtBacktesting,
-            start_date,
-            end_date,
-            benchmark_asset=f"{coin}/USD",  # Use same coin as benchmark
-            quote_asset=Asset(symbol="USD", asset_type="crypto"),
-            parameters={"cash_at_risk": 0.25, "coin": coin},
-            **kwargs,
-        )
-    except Exception as e:
-        print(f"Error during backtest: {e}")
-        print("Trying without benchmark...")
-        # Try again without benchmark if that was the issue
+        # Use a more recent timeframe for better data availability
+        start_date = datetime(2023, 6, 1) 
+        end_date = datetime(2023, 12, 31)
+        exchange_id = "coinbase"
+        kwargs = {
+            "exchange_id": exchange_id,
+        }
+        CcxtBacktesting.MIN_TIMESTEP = "day"
+        
+        # Use BTC/USD which has good data availability on Coinbase
+        coin = "BTC"
+        quote = "USD"
+        
+        print(f"Running backtest for {coin}/{quote} on {exchange_id} from {start_date} to {end_date}")
+        
+        # Run without a benchmark to avoid errors
         results, strat_obj = MLTrader.run_backtest(
             CcxtBacktesting,
             start_date,
             end_date,
             benchmark_asset=None,  # No benchmark to avoid errors
-            quote_asset=Asset(symbol="USD", asset_type="crypto"),
-            parameters={"cash_at_risk": 0.25, "coin": coin},
+            quote_asset=Asset(symbol=quote, asset_type="crypto"),
+            parameters={"cash_at_risk": 0.25, "coin": coin, "quote": quote},
             **kwargs,
         )
+    except Exception as e:
+        print(f"Error during backtest: {str(e)}")
+        sys.exit(1)
