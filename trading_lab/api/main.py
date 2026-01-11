@@ -31,9 +31,9 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
+        "http://localhost:3847",
         "http://localhost:5173",  # Vite dev server
-        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3847",
         "http://127.0.0.1:5173",
     ],
     allow_credentials=True,
@@ -67,4 +67,4 @@ async def health():
 # For running with uvicorn directly
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8847)

@@ -51,12 +51,12 @@ ALPACA_PAPER_TRADING_ENDPOINT=https://paper-api.alpaca.markets/v2
 ### 3. Start the API Server
 
 ```bash
-uvicorn trading_lab.api.main:app --reload
+uvicorn trading_lab.api.main:app --reload --port 8847
 ```
 
-The API will be available at http://localhost:8000
-- Swagger docs: http://localhost:8000/docs
-- OpenAPI spec: http://localhost:8000/openapi.json
+The API will be available at http://localhost:8847
+- Swagger docs: http://localhost:8847/docs
+- OpenAPI spec: http://localhost:8847/openapi.json
 
 ### 4. Start the Web UI (Optional)
 
@@ -66,14 +66,14 @@ npm install
 npm run dev
 ```
 
-The UI will be available at http://localhost:3000
+The UI will be available at http://localhost:3847
 
 ## Usage
 
 ### Running a Backtest via API
 
 ```bash
-curl -X POST http://localhost:8000/api/backtests \
+curl -X POST http://localhost:8847/api/backtests \
   -H "Content-Type: application/json" \
   -d '{
     "strategy_name": "random",

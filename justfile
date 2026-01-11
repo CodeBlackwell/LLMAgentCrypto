@@ -35,7 +35,7 @@ venv:
 
 # Start the FastAPI backend server
 api:
-    {{venv_activate}} uvicorn trading_lab.api.main:app --reload --host 0.0.0.0 --port 8000
+    {{venv_activate}} uvicorn trading_lab.api.main:app --reload --host 0.0.0.0 --port 8847
 
 # Start the React frontend dev server
 web:
@@ -43,17 +43,17 @@ web:
 
 # Start both API and web servers (requires terminal multiplexer)
 dev:
-    @echo "Starting API server on :8000 and Web server on :3000"
+    @echo "Starting API server on :8847 and Web server on :3847"
     @echo "Press Ctrl+C to stop"
     (trap 'kill 0' SIGINT; \
-        {{venv_activate}} uvicorn trading_lab.api.main:app --reload --port 8000 & \
+        {{venv_activate}} uvicorn trading_lab.api.main:app --reload --port 8847 & \
         cd trading_lab/web && npm run dev & \
         wait)
 
 # Start API in background and return
 api-bg:
-    {{venv_activate}} uvicorn trading_lab.api.main:app --reload --port 8000 &
-    @echo "API server started in background on :8000"
+    {{venv_activate}} uvicorn trading_lab.api.main:app --reload --port 8847 &
+    @echo "API server started in background on :8847"
 
 # ============== Database ==============
 
@@ -79,18 +79,18 @@ db-clear:
 
 # Run a quick random backtest via API
 test-backtest:
-    curl -s -X POST http://localhost:8000/api/backtests \
+    curl -s -X POST http://localhost:8847/api/backtests \
         -H "Content-Type: application/json" \
         -d '{"strategy_name": "random", "asset": "BTC/USD", "start_date": "2024-01-01", "end_date": "2024-03-01"}' \
         | python -m json.tool
 
 # List available strategies via API
 test-strategies:
-    curl -s http://localhost:8000/api/strategies | python -m json.tool
+    curl -s http://localhost:8847/api/strategies | python -m json.tool
 
 # Check API health
 health:
-    curl -s http://localhost:8000/health | python -m json.tool
+    curl -s http://localhost:8847/health | python -m json.tool
 
 # Run Python tests
 test:
@@ -152,11 +152,11 @@ env:
 
 # Open API docs in browser
 docs:
-    xdg-open http://localhost:8000/docs 2>/dev/null || open http://localhost:8000/docs
+    xdg-open http://localhost:8847/docs 2>/dev/null || open http://localhost:8847/docs
 
 # Open web UI in browser
 open:
-    xdg-open http://localhost:3000 2>/dev/null || open http://localhost:3000
+    xdg-open http://localhost:3847 2>/dev/null || open http://localhost:3847
 
 # Clean build artifacts
 clean:
@@ -173,4 +173,4 @@ clean:
 
 # Run in docker
 # docker-run:
-#     docker run -p 8000:8000 -p 3000:3000 trading-lab
+#     docker run -p 8847:8847 -p 3847:3847 trading-lab
