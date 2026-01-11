@@ -1,17 +1,59 @@
 [project]
-name = "29-05-2024-tradingv2"
+name = "trading-lab"
 version = "0.1.0"
-description = "Add your description here"
+description = "Algorithmic Trading Development and Backtesting Platform"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "alpaca-trade-api>=3.2.0",
+    # Trading & Backtesting
+    "lumibot>=4.0.0",
+    "alpaca-py>=0.30.0",
+
+    # ML & NLP
+    "torch>=2.0.0",
+    "transformers>=4.40.0",
+    "langchain>=0.3.0",
+    "langchain-community>=0.3.0",
+    "langchain-ollama>=0.3.0",
+
+    # API & Web
+    "fastapi>=0.115.0",
+    "uvicorn>=0.32.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.6.0",
+
+    # Database
+    "sqlalchemy>=2.0.36",
+
+    # Utilities
     "colorama>=0.4.6",
-    "langchain>=0.3.24",
-    "langchain-community>=0.3.21",
-    "langchain-ollama>=0.3.2",
-    "lumibot>=3.11.10",
     "timedelta>=2020.12.3",
-    "torch>=2.7.0",
-    "transformers>=4.51.3",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.0",
+    "ruff>=0.8.0",
+]
+
+[project.scripts]
+trading-lab = "trading_lab.api.main:app"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["trading_lab*"]
+exclude = ["archive*", "logs*", "tests*"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.0",
+    "ruff>=0.8.0",
 ]

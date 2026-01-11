@@ -1,0 +1,198 @@
+"""Backtest engine wrapper around Lumibot."""
+
+from datetime import datetime
+from typing import Type, Optional
+import logging
+
+from lumibot.backtesting import CcxtBacktesting
+from lumibot.entities import Asset, TradingFee
+from lumibot.strategies.strategy import Strategy
+
+from ..core.config import BacktestConfig
+from ..strategies.registry import get_strategy
+from ..storage.database import get_db
+from ..storage.repository import BacktestRepository, TradeRepository, DailyStatRepository
+
+logger = logging.getLogger(__name__)
+
+
+class BacktestEngine:
+    """Wrapper around Lumibot for running backtests.
+
+    Provides a clean interface for running backtests and
+    storing results in the database.
+    """
+
+    # Supported exchanges
+    EXCHANGES = {
+        "kraken": "kraken",
+        "coinbase": "coinbasepro",
+        "binance": "binance",
+        "bitfinex": "bitfinex",
+    }
+
+    def __init__(
+        self,
+        min_timestep: str = "day",
+        trading_fees: Optional[dict] = None,
+    ):
+        """Initialize backtest engine.
+
+        Args:
+            min_timestep: Minimum time granularity ("day", "hour", "minute")
+            trading_fees: Dict with "buy" and "sell" fee percentages
+        """
+        self.min_timestep = min_timestep
+        self.trading_fees = trading_fees or {}
+
+    def _build_fees(self) -> tuple[list, list]:
+        """Build trading fee objects."""
+        buy_fees = []
+        sell_fees = []
+
+        if "buy" in self.trading_fees:
+            buy_fees.append(TradingFee(percent_fee=self.trading_fees["buy"]))
+        if "sell" in self.trading_fees:
+            sell_fees.append(TradingFee(percent_fee=self.trading_fees["sell"]))
+
+        return buy_fees, sell_fees
+
+    def _build_asset(self, symbol: str, asset_type: str) -> Asset:
+        """Build a Lumibot Asset from symbol and type."""
+        if asset_type == "crypto":
+            return Asset(symbol=symbol, asset_type=Asset.AssetType.CRYPTO)
+        elif asset_type == "stock":
+            return Asset(symbol=symbol, asset_type=Asset.AssetType.STOCK)
+        else:
+            return Asset(symbol=symbol, asset_type=Asset.AssetType.FOREX)
+
+    def run(
+        self,
+        config: BacktestConfig,
+        save_to_db: bool = True,
+    ) -> dict:
+        """Run a backtest with the given configuration.
+
+        Args:
+            config: Backtest configuration
+            save_to_db: Whether to save results to database
+
+        Returns:
+            Dictionary with backtest results
+        """
+        # Get strategy class
+        strategy_class = get_strategy(config.strategy_name)
+
+        # Configure backtesting
+        CcxtBacktesting.MIN_TIMESTEP = self.min_timestep
+        exchange_id = self.EXCHANGES.get(config.exchange, config.exchange)
+
+        # Build parameters
+        parameters = {
+            "cash_at_risk": config.cash_at_risk,
+            "coin": config.asset.split("/")[0],
+            "quote": config.asset.split("/")[1] if "/" in config.asset else "USD",
+            "asset_type": config.asset_type,
+            "threshold": config.threshold,
+        }
+
+        # Build assets
+        quote_symbol = parameters["quote"]
+        quote_asset = self._build_asset(
+            quote_symbol,
+            "crypto" if config.asset_type == "crypto" else "forex"
+        )
+
+        # Build fees
+        buy_fees, sell_fees = self._build_fees()
+
+        # Create database record if saving
+        backtest_id = None
+        if save_to_db:
+            with get_db() as db:
+                repo = BacktestRepository(db)
+                run = repo.create(
+                    strategy_name=config.strategy_name,
+                    asset=config.asset,
+                    asset_type=config.asset_type,
+                    start_date=datetime.combine(config.start_date, datetime.min.time()),
+                    end_date=datetime.combine(config.end_date, datetime.min.time()),
+                    initial_cash=config.initial_cash,
+                    signal_provider=config.signal_provider,
+                    exchange=config.exchange,
+                    parameters=parameters,
+                )
+                backtest_id = run.id
+                repo.update_status(backtest_id, "running")
+
+        try:
+            # Run backtest
+            kwargs = {"exchange_id": exchange_id}
+            if buy_fees:
+                kwargs["buy_trading_fees"] = buy_fees
+            if sell_fees:
+                kwargs["sell_trading_fees"] = sell_fees
+
+            results, strat_obj = strategy_class.run_backtest(
+                CcxtBacktesting,
+                datetime.combine(config.start_date, datetime.min.time()),
+                datetime.combine(config.end_date, datetime.min.time()),
+                benchmark_asset=config.asset,
+                quote_asset=quote_asset,
+                parameters=parameters,
+                budget=config.initial_cash,
+                **kwargs,
+            )
+
+            # Extract results
+            result_data = {
+                "backtest_id": backtest_id,
+                "strategy_name": config.strategy_name,
+                "asset": config.asset,
+                "start_date": config.start_date.isoformat(),
+                "end_date": config.end_date.isoformat(),
+                "initial_cash": config.initial_cash,
+                "final_value": results.get("portfolio_value", config.initial_cash),
+                "total_return": results.get("total_return", 0) * 100,  # As percentage
+                "sharpe_ratio": results.get("sharpe", None),
+                "max_drawdown": results.get("max_drawdown", None),
+                "status": "completed",
+            }
+
+            # Save to database
+            if save_to_db and backtest_id:
+                with get_db() as db:
+                    repo = BacktestRepository(db)
+                    repo.update_results(
+                        backtest_id=backtest_id,
+                        final_value=result_data["final_value"],
+                        total_return=result_data["total_return"],
+                        sharpe_ratio=result_data.get("sharpe_ratio"),
+                        max_drawdown=result_data.get("max_drawdown"),
+                    )
+
+            return result_data
+
+        except Exception as e:
+            logger.exception(f"Backtest failed: {e}")
+
+            if save_to_db and backtest_id:
+                with get_db() as db:
+                    repo = BacktestRepository(db)
+                    repo.update_status(backtest_id, "failed", str(e))
+
+            raise
+
+
+def run_backtest(config: BacktestConfig, **engine_kwargs) -> dict:
+    """Convenience function to run a backtest.
+
+    Args:
+        config: Backtest configuration
+        **engine_kwargs: Passed to BacktestEngine
+
+    Returns:
+        Dictionary with results
+    """
+    engine = BacktestEngine(**engine_kwargs)
+    return engine.run(config)
