@@ -94,7 +94,23 @@ health:
 
 # Run Python tests
 test:
-    {{venv_activate}} pytest -v
+    {{venv_activate}} pytest
+
+# Run tests with coverage
+test-cov:
+    {{venv_activate}} pytest --cov=trading_lab --cov-report=term-missing
+
+# Run only unit tests
+test-unit:
+    {{venv_activate}} pytest trading_lab/tests/unit/ -v
+
+# Run only integration tests
+test-int:
+    {{venv_activate}} pytest trading_lab/tests/integration/ -v
+
+# Run tests matching a pattern
+test-match pattern:
+    {{venv_activate}} pytest -k "{{pattern}}" -v
 
 # ============== Build ==============
 

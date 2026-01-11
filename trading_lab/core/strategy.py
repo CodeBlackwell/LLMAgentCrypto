@@ -1,6 +1,6 @@
 """Base strategy class with common trading functionality."""
 
-from typing import Literal
+from typing import Literal, Optional
 from datetime import timedelta
 
 from lumibot.entities import Asset
@@ -8,6 +8,7 @@ from lumibot.strategies.strategy import Strategy
 
 from .signals import Signal, SignalProvider
 from .sizing import PositionSizer, PercentOfCash
+from .risk import RiskManager
 
 
 class BaseStrategy(Strategy):
@@ -27,6 +28,7 @@ class BaseStrategy(Strategy):
         self,
         signal_provider: SignalProvider | None = None,
         sizer: PositionSizer | None = None,
+        risk_manager: RiskManager | None = None,
         threshold: float = 0.7,
         cash_at_risk: float = 0.25,
         coin: str = "BTC",
@@ -40,6 +42,7 @@ class BaseStrategy(Strategy):
         Args:
             signal_provider: Provider for trading signals (optional)
             sizer: Position sizing strategy (default: PercentOfCash)
+            risk_manager: Risk management rules (optional)
             threshold: Minimum confidence to act on signals
             cash_at_risk: Position size as fraction of cash (if no sizer)
             coin: Asset symbol to trade
@@ -59,6 +62,7 @@ class BaseStrategy(Strategy):
         # Core parameters
         self.signal_provider = signal_provider
         self.sizer = sizer or PercentOfCash(cash_at_risk)
+        self.risk_manager = risk_manager
         self.threshold = threshold
         self.cash_at_risk = cash_at_risk
         self.lookback_days = lookback_days
@@ -159,6 +163,23 @@ class BaseStrategy(Strategy):
         if cash < quantity * last_price:
             return False
 
+        # Evaluate through risk manager if configured
+        if self.risk_manager is not None:
+            decision = self.risk_manager.evaluate_trade(signal, quantity, last_price)
+
+            if not decision.allow_trade:
+                return False
+
+            # Apply quantity modification if any
+            if decision.modified_quantity is not None:
+                quantity = decision.modified_quantity
+
+            # Store exit prices on the risk manager state
+            if decision.stop_loss_price is not None:
+                self.risk_manager.state.stop_loss_price = decision.stop_loss_price
+            if decision.take_profit_price is not None:
+                self.risk_manager.state.take_profit_price = decision.take_profit_price
+
         if signal.action == "buy":
             return self._execute_buy(quantity)
         elif signal.action == "sell":
@@ -171,6 +192,8 @@ class BaseStrategy(Strategy):
         # Close any short position first
         if self.last_trade == "sell":
             self.sell_all()
+            if self.risk_manager:
+                self.risk_manager.reset_exit_prices()
 
         order = self.create_order(
             self._asset,
@@ -181,6 +204,13 @@ class BaseStrategy(Strategy):
         )
         self.submit_order(order)
         self.last_trade = "buy"
+
+        # Track entry price for risk management
+        if self.risk_manager:
+            last_price = self.get_last_price(self._asset, quote=self._quote_asset)
+            if last_price:
+                self.risk_manager.state.entry_price = last_price
+
         return True
 
     def _execute_sell(self, quantity: float) -> bool:
@@ -188,6 +218,8 @@ class BaseStrategy(Strategy):
         # Close any long position first
         if self.last_trade == "buy":
             self.sell_all()
+            if self.risk_manager:
+                self.risk_manager.reset_exit_prices()
 
         order = self.create_order(
             self._asset,
@@ -204,7 +236,64 @@ class BaseStrategy(Strategy):
         """Main trading logic - override in subclasses.
 
         Default implementation uses signal provider if configured.
+        Includes risk management checks for stop-loss and take-profit.
         """
+        # Update risk manager state
+        self._update_risk_state()
+
+        # Check stop-loss and take-profit triggers
+        if self._check_exit_triggers():
+            return  # Position was closed, skip signal processing
+
         if self.signal_provider is not None:
             signal = self.get_signal()
             self.execute_signal(signal)
+
+    def _update_risk_state(self) -> None:
+        """Update the risk manager with current portfolio state."""
+        if self.risk_manager is None:
+            return
+
+        portfolio_value = self.get_portfolio_value()
+        position = self.get_position(self._asset)
+        position_quantity = position.quantity if position else 0.0
+
+        self.risk_manager.update_state(
+            portfolio_value=portfolio_value,
+            position=position_quantity,
+            entry_price=self.risk_manager.state.entry_price,
+        )
+
+    def _check_exit_triggers(self) -> bool:
+        """Check and execute stop-loss or take-profit exits.
+
+        Returns:
+            True if an exit was triggered and position closed.
+        """
+        if self.risk_manager is None:
+            return False
+
+        # Only check if we have a position
+        position = self.get_position(self._asset)
+        if not position or position.quantity <= 0:
+            return False
+
+        last_price = self.get_last_price(self._asset, quote=self._quote_asset)
+        if last_price is None:
+            return False
+
+        # Check stop-loss
+        if self.risk_manager.check_stop_loss(last_price):
+            self.sell_all()
+            self.risk_manager.reset_exit_prices()
+            self.last_trade = None
+            return True
+
+        # Check take-profit
+        if self.risk_manager.check_take_profit(last_price):
+            self.sell_all()
+            self.risk_manager.reset_exit_prices()
+            self.last_trade = None
+            return True
+
+        return False
