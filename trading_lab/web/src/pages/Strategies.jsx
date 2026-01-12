@@ -1,8 +1,28 @@
-import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { useQuery, useMutation } from '@tanstack/react-query'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 
 function StrategyCard({ strategy }) {
+  const navigate = useNavigate()
+
+  const quickRunMutation = useMutation({
+    mutationFn: () => api.createBacktest({
+      strategy_name: strategy.name,
+      signal_provider: strategy.default_provider,
+      asset: 'BTC/USD',
+      asset_type: 'crypto',
+      start_date: '2024-01-01',
+      end_date: '2024-06-30',
+      initial_cash: 100000,
+      threshold: 0.7,
+      cash_at_risk: 0.25,
+      exchange: 'kraken',
+    }),
+    onSuccess: (data) => {
+      navigate(`/backtests/${data.backtest_id}`)
+    },
+  })
+
   return (
     <div className="card">
       <div className="flex items-start justify-between">
@@ -27,12 +47,21 @@ function StrategyCard({ strategy }) {
         <span className="text-xs text-gray-400">
           Provider: {strategy.default_provider}
         </span>
-        <Link
-          to={`/backtests/new?strategy=${strategy.name}`}
-          className="text-sm text-primary-600 hover:text-primary-700"
-        >
-          Run Backtest
-        </Link>
+        <div className="flex gap-2">
+          <button
+            onClick={() => quickRunMutation.mutate()}
+            disabled={quickRunMutation.isPending}
+            className="btn btn-secondary text-sm"
+          >
+            {quickRunMutation.isPending ? 'Running...' : 'Quick Run'}
+          </button>
+          <Link
+            to={`/backtests/new?strategy=${strategy.name}`}
+            className="text-sm text-primary-600 hover:text-primary-700"
+          >
+            Run Backtest
+          </Link>
+        </div>
       </div>
     </div>
   )

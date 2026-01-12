@@ -119,6 +119,12 @@ export default function BacktestDetail() {
             </button>
           )}
           <button
+            onClick={() => navigate(`/backtests/new?clone=${id}`)}
+            className="btn btn-secondary"
+          >
+            Clone & Edit
+          </button>
+          <button
             onClick={() => {
               if (confirm('Delete this backtest?')) {
                 deleteMutation.mutate()

@@ -11,5 +11,23 @@ wheels/
 .env
 .snapshots/
 
+# Node
+node_modules/
+
+# Database
+*.db
+
+# Test artifacts
+test-results/
+playwright-report/
+e2e/test-results/
+e2e/playwright-report/
+
+# Build cache
+.vite/
+
+# MCP plugins
+.playwright-mcp/
+
 *CLAUDE.md
 logs/*

@@ -5,6 +5,7 @@ import Strategies from './pages/Strategies'
 import Backtests from './pages/Backtests'
 import NewBacktest from './pages/NewBacktest'
 import BacktestDetail from './pages/BacktestDetail'
+import BacktestCompare from './pages/BacktestCompare'
 
 const navItems = [
   { path: '/', label: 'Dashboard' },
@@ -64,6 +65,7 @@ function App() {
           <Route path="/strategies" element={<Strategies />} />
           <Route path="/backtests" element={<Backtests />} />
           <Route path="/backtests/new" element={<NewBacktest />} />
+          <Route path="/backtests/compare" element={<BacktestCompare />} />
           <Route path="/backtests/:id" element={<BacktestDetail />} />
         </Routes>
       </main>

@@ -136,6 +136,15 @@ lint:
 lint-web:
     cd trading_lab/web && npm run lint
 
+# ============== Teardown ==============
+
+# Kill API and web servers running on default ports
+kill:
+    @echo "Killing processes on ports 8847 (API) and 3847 (Web)..."
+    -lsof -ti:8847 | xargs -r kill -9 2>/dev/null || true
+    -lsof -ti:3847 | xargs -r kill -9 2>/dev/null || true
+    @echo "Done"
+
 # ============== Utilities ==============
 
 # Show project structure

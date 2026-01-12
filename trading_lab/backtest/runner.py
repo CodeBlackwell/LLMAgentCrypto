@@ -1,7 +1,10 @@
 """Async backtest runner for background execution."""
 
 import asyncio
+import signal
+import threading
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from datetime import datetime
 from typing import Optional, Callable
 import logging
@@ -12,6 +15,32 @@ from ..storage.repository import BacktestRepository
 from .engine import BacktestEngine
 
 logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def safe_signal_handling():
+    """Context manager that allows signal.signal calls in non-main threads.
+
+    Lumibot calls signal.signal() internally, which raises ValueError
+    when called from a non-main thread. This context manager monkey-patches
+    signal.signal to be a no-op when not in the main thread.
+    """
+    original_signal = signal.signal
+
+    def patched_signal(signalnum, handler):
+        if threading.current_thread() is threading.main_thread():
+            return original_signal(signalnum, handler)
+        # In non-main threads, just return the current handler without setting
+        try:
+            return signal.getsignal(signalnum)
+        except Exception:
+            return signal.SIG_DFL
+
+    signal.signal = patched_signal
+    try:
+        yield
+    finally:
+        signal.signal = original_signal
 
 
 class BacktestRunner:
@@ -98,10 +127,11 @@ class BacktestRunner:
             repo = BacktestRepository(db)
             repo.update_status(backtest_id, "running")
 
-        # Run the backtest
-        engine = BacktestEngine(**engine_kwargs)
-        # Don't save to DB again since we already created the record
-        result = engine.run(config, save_to_db=False)
+        # Run the backtest with safe signal handling for non-main threads
+        with safe_signal_handling():
+            engine = BacktestEngine(**engine_kwargs)
+            # Don't save to DB again since we already created the record
+            result = engine.run(config, save_to_db=False)
         result["backtest_id"] = backtest_id
 
         # Update results

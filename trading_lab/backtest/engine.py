@@ -133,18 +133,38 @@ class BacktestEngine:
             if sell_fees:
                 kwargs["sell_trading_fees"] = sell_fees
 
+            # Skip benchmark comparison to avoid CCXT data fetch issues
+            # The benchmark stats would fail if CCXT can't find data for the symbol
             results, strat_obj = strategy_class.run_backtest(
                 CcxtBacktesting,
                 datetime.combine(config.start_date, datetime.min.time()),
                 datetime.combine(config.end_date, datetime.min.time()),
-                benchmark_asset=config.asset,
+                benchmark_asset=None,  # Skip benchmark to avoid data issues
                 quote_asset=quote_asset,
                 parameters=parameters,
                 budget=config.initial_cash,
+                show_plot=False,  # Disable plotting in background
+                show_tearsheet=False,  # Disable tearsheet generation
+                save_tearsheet=False,  # Don't save tearsheet files
+                stats_file=None,  # Don't write stats file
                 **kwargs,
             )
 
-            # Extract results
+            # Extract results - handle dict format for max_drawdown
+            max_dd = results.get("max_drawdown")
+            if isinstance(max_dd, dict):
+                max_dd = float(max_dd.get("drawdown", 0))
+            elif max_dd is not None:
+                max_dd = float(max_dd)
+
+            sharpe = results.get("sharpe")
+            if sharpe is not None:
+                sharpe = float(sharpe)
+
+            total_ret = results.get("total_return", 0)
+            if total_ret is not None:
+                total_ret = float(total_ret) * 100  # As percentage
+
             result_data = {
                 "backtest_id": backtest_id,
                 "strategy_name": config.strategy_name,
@@ -152,10 +172,10 @@ class BacktestEngine:
                 "start_date": config.start_date.isoformat(),
                 "end_date": config.end_date.isoformat(),
                 "initial_cash": config.initial_cash,
-                "final_value": results.get("portfolio_value", config.initial_cash),
-                "total_return": results.get("total_return", 0) * 100,  # As percentage
-                "sharpe_ratio": results.get("sharpe", None),
-                "max_drawdown": results.get("max_drawdown", None),
+                "final_value": float(results.get("portfolio_value", config.initial_cash)),
+                "total_return": total_ret,
+                "sharpe_ratio": sharpe,
+                "max_drawdown": max_dd,
                 "status": "completed",
             }
 
