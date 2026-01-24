@@ -287,11 +287,11 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a user, I want quick preset buttons for common date ranges.
 
 **Acceptance Criteria:**
-- [ ] In `trading_lab/web/src/pages/NewBacktest.jsx`, change date inputs to `type="date"`
-- [ ] Add preset buttons: "Last 3 months", "Last 6 months", "YTD", "Last year"
-- [ ] Clicking preset populates both start and end date fields
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] In `trading_lab/web/src/pages/NewBacktest.jsx`, change date inputs to `type="date"`
+- [x] Add preset buttons: "Last 3 months", "Last 6 months", "YTD", "Last year"
+- [x] Clicking preset populates both start and end date fields
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ---
 

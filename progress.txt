@@ -326,3 +326,23 @@
   - Clock icon SVG adds visual clarity to the duration estimate
   - All 227 tests continue to pass
 ---
+
+## Iteration 20 - US-020: Add date picker presets
+- What was implemented:
+  - Added `formatDateString()` helper to convert Date to YYYY-MM-DD format
+  - Added `applyDatePreset()` function with switch for 4 preset options
+  - Date inputs were already type="date" (existed from previous implementation)
+  - Added preset buttons section with "Quick select:" label
+  - Buttons: "Last 3 months", "Last 6 months", "YTD", "Last year"
+  - Each preset calculates start date relative to today and sets end date to today
+  - Clears validation errors when preset is applied
+  - Styled as rounded pill buttons with hover state
+- Files changed:
+  - trading_lab/web/src/pages/NewBacktest.jsx (added preset functions and UI)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Date.toISOString().split('T')[0] is a simple way to get YYYY-MM-DD format
+  - setMonth/setFullYear on Date object handles month overflow correctly
+  - YTD uses template literal with current year: `${today.getFullYear()}-01-01`
+  - All 227 tests continue to pass
+---

@@ -142,6 +142,56 @@ export default function NewBacktest() {
   const estimatedSeconds = tradingDays * 2  // ~2 seconds per trading day
   const estimatedDuration = formatDuration(estimatedSeconds)
 
+  // Date preset handlers
+  const formatDateString = (date) => {
+    return date.toISOString().split('T')[0]
+  }
+
+  const applyDatePreset = (preset) => {
+    const today = new Date()
+    const endDate = formatDateString(today)
+    let startDate
+
+    switch (preset) {
+      case '3months': {
+        const start = new Date(today)
+        start.setMonth(start.getMonth() - 3)
+        startDate = formatDateString(start)
+        break
+      }
+      case '6months': {
+        const start = new Date(today)
+        start.setMonth(start.getMonth() - 6)
+        startDate = formatDateString(start)
+        break
+      }
+      case 'ytd': {
+        startDate = `${today.getFullYear()}-01-01`
+        break
+      }
+      case '1year': {
+        const start = new Date(today)
+        start.setFullYear(start.getFullYear() - 1)
+        startDate = formatDateString(start)
+        break
+      }
+      default:
+        return
+    }
+
+    setForm(prev => ({
+      ...prev,
+      start_date: startDate,
+      end_date: endDate
+    }))
+    // Clear any date validation errors
+    setValidationErrors(prev => ({
+      ...prev,
+      start_date: '',
+      end_date: ''
+    }))
+  }
+
   const { data: strategies } = useQuery({
     queryKey: ['strategies'],
     queryFn: api.getStrategies,
@@ -307,6 +357,39 @@ export default function NewBacktest() {
               <p className="mt-1 text-sm text-red-600">{validationErrors.end_date}</p>
             )}
           </div>
+        </div>
+
+        {/* Date Presets */}
+        <div className="flex flex-wrap gap-2">
+          <span className="text-sm text-gray-500 mr-2 self-center">Quick select:</span>
+          <button
+            type="button"
+            onClick={() => applyDatePreset('3months')}
+            className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
+          >
+            Last 3 months
+          </button>
+          <button
+            type="button"
+            onClick={() => applyDatePreset('6months')}
+            className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
+          >
+            Last 6 months
+          </button>
+          <button
+            type="button"
+            onClick={() => applyDatePreset('ytd')}
+            className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
+          >
+            YTD
+          </button>
+          <button
+            type="button"
+            onClick={() => applyDatePreset('1year')}
+            className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
+          >
+            Last year
+          </button>
         </div>
 
         {/* Estimated Duration */}
