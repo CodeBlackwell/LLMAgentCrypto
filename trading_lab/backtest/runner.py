@@ -13,6 +13,7 @@ from ..core.config import BacktestConfig
 from ..storage.database import get_db
 from ..storage.repository import BacktestRepository
 from .engine import BacktestEngine
+from .progress import ProgressTracker
 
 logger = logging.getLogger(__name__)
 
@@ -122,16 +123,45 @@ class BacktestRunner:
         engine_kwargs: dict,
     ) -> dict:
         """Run backtest in thread pool."""
-        # Update status to running
+        # Update status to running and initialize progress tracker
         with get_db() as db:
             repo = BacktestRepository(db)
             repo.update_status(backtest_id, "running")
 
+            # Create progress tracker for this backtest
+            progress_tracker = ProgressTracker(
+                backtest_id=backtest_id,
+                start_date=config.start_date,
+                end_date=config.end_date,
+                repository=repo,
+            )
+
+            # Initialize total_days in database
+            run = repo.get(backtest_id)
+            if run:
+                run.total_days = progress_tracker.total_days
+                db.commit()
+
         # Run the backtest with safe signal handling for non-main threads
         with safe_signal_handling():
-            engine = BacktestEngine(**engine_kwargs)
-            # Don't save to DB again since we already created the record
-            result = engine.run(config, save_to_db=False)
+            # Create a new progress tracker with fresh db session for engine use
+            with get_db() as db:
+                repo = BacktestRepository(db)
+                progress_tracker = ProgressTracker(
+                    backtest_id=backtest_id,
+                    start_date=config.start_date,
+                    end_date=config.end_date,
+                    repository=repo,
+                )
+
+                # Pass progress tracker to engine
+                engine = BacktestEngine(progress_tracker=progress_tracker, **engine_kwargs)
+                # Don't save to DB again since we already created the record
+                result = engine.run(config, save_to_db=False)
+
+                # Mark progress as 100% complete on successful completion
+                progress_tracker.complete()
+
         result["backtest_id"] = backtest_id
 
         # Update results

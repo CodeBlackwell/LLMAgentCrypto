@@ -93,11 +93,11 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a developer, I need the runner to create and pass a ProgressTracker to the engine.
 
 **Acceptance Criteria:**
-- [ ] Modify `BacktestRunner._run_backtest()` in `trading_lab/backtest/runner.py`
-- [ ] Create `ProgressTracker` instance before engine execution
-- [ ] Pass tracker to `BacktestEngine`
-- [ ] Update progress to 100% on successful completion
-- [ ] Typecheck passes
+- [x] Modify `BacktestRunner._run_backtest()` in `trading_lab/backtest/runner.py`
+- [x] Create `ProgressTracker` instance before engine execution
+- [x] Pass tracker to `BacktestEngine`
+- [x] Update progress to 100% on successful completion
+- [x] Typecheck passes
 
 ---
 
