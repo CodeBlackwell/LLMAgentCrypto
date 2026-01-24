@@ -66,14 +66,14 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a developer, I need a ProgressTracker class to calculate and emit progress updates during backtest execution.
 
 **Acceptance Criteria:**
-- [ ] Create new file `trading_lab/backtest/progress.py`
-- [ ] `ProgressTracker` class with:
+- [x] Create new file `trading_lab/backtest/progress.py`
+- [x] `ProgressTracker` class with:
   - `__init__(self, backtest_id: str, start_date: date, end_date: date, repository: BacktestRepository)`
   - `update(self, current_date: date, message: str = "") -> None` - calculates percent, calls repository
   - `set_phase(self, phase: str) -> None` - updates message without changing date
   - `complete(self) -> None` - sets progress to 100%
-- [ ] Progress updates throttled to max once per 500ms to avoid DB thrashing
-- [ ] Typecheck passes
+- [x] Progress updates throttled to max once per 500ms to avoid DB thrashing
+- [x] Typecheck passes
 
 ---
 
