@@ -83,8 +83,15 @@ export default function BacktestDetail() {
     }
   }, [streamData, backtestFromQuery, id, queryClient])
 
-  // Configure polling: disabled when SSE is connected, otherwise poll when active
-  const refetchInterval = isConnected ? false : (isActiveStatus ? 2000 : false)
+  // Configure polling: disabled when SSE is connected, otherwise poll based on status
+  // running: 500ms (fast updates), pending: 1000ms, terminal states: false
+  const getPollingInterval = () => {
+    if (isConnected) return false
+    if (backtestFromQuery?.status === 'running') return 500
+    if (backtestFromQuery?.status === 'pending') return 1000
+    return false
+  }
+  const refetchInterval = getPollingInterval()
   useQuery({
     queryKey: ['backtest-poll', id],
     queryFn: () => api.getBacktest(id).then((data) => {

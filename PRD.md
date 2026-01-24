@@ -328,13 +328,13 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a user, I want faster updates when my backtest is running.
 
 **Acceptance Criteria:**
-- [ ] In `BacktestDetail.jsx`, update `refetchInterval` logic:
+- [x] In `BacktestDetail.jsx`, update `refetchInterval` logic:
   - `running`: 500ms (reduced from 2000ms)
   - `pending`: 1000ms
   - terminal states: `false` (no polling)
-- [ ] Polling disabled when SSE is connected
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Polling disabled when SSE is connected
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ---
 
