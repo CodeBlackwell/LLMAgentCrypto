@@ -1,18 +1,20 @@
 """Backtest-related API routes."""
 
+import asyncio
+import json
 from fastapi import APIRouter, HTTPException, BackgroundTasks
-from typing import Optional
+from fastapi.responses import StreamingResponse
+from typing import Optional, AsyncGenerator
 
 from ...core.config import BacktestConfig
 from ...storage.database import get_db
-from ...storage.repository import BacktestRepository
+from ...storage.repository import BacktestRepository, TradeRepository
 from ...backtest.runner import get_runner
 from ..schemas import (
     BacktestRequest,
     BacktestResponse,
     BacktestListResponse,
     BacktestSubmitResponse,
-    ErrorResponse,
 )
 
 router = APIRouter(tags=["backtests"])
@@ -114,3 +116,116 @@ async def cancel_backtest(backtest_id: int):
             status_code=400,
             detail="Backtest is not running or already completed"
         )
+
+
+async def _stream_backtest_updates(backtest_id: int) -> AsyncGenerator[str, None]:
+    """Generate SSE events for backtest progress updates.
+
+    Polls database every 500ms and emits events only on changes.
+    Auto-closes when status is terminal (completed or failed).
+    """
+    last_progress_percent: Optional[float] = None
+    last_status: Optional[str] = None
+    last_trade_count: int = 0
+
+    while True:
+        with get_db() as db:
+            repo = BacktestRepository(db)
+            run = repo.get(backtest_id)
+
+            if run is None:
+                # Backtest was deleted
+                yield f"event: error\ndata: {json.dumps({'error': 'Backtest not found'})}\n\n"
+                return
+
+            # Check if there are changes to emit
+            current_status = run.status
+            current_progress = run.progress_percent
+
+            # Get trades for this backtest
+            trade_repo = TradeRepository(db)
+            trades = trade_repo.list_for_backtest(backtest_id)
+            current_trade_count = len(trades)
+
+            # Emit progress event if changed
+            if current_progress != last_progress_percent:
+                progress_data = {
+                    "progress_percent": current_progress,
+                    "progress_message": run.progress_message,
+                    "current_date": run.current_date.isoformat() if run.current_date else None,
+                    "total_days": run.total_days,
+                    "processed_days": run.processed_days,
+                }
+                yield f"event: progress\ndata: {json.dumps(progress_data)}\n\n"
+                last_progress_percent = current_progress
+
+            # Emit trades event if new trades
+            if current_trade_count > last_trade_count:
+                new_trades = trades[last_trade_count:]
+                trades_data = [
+                    {
+                        "id": t.id,
+                        "timestamp": t.timestamp.isoformat() if t.timestamp else None,
+                        "asset": t.asset,
+                        "side": t.side,
+                        "quantity": t.quantity,
+                        "price": t.price,
+                        "total_value": t.total_value,
+                    }
+                    for t in new_trades
+                ]
+                yield f"event: trades\ndata: {json.dumps(trades_data)}\n\n"
+                last_trade_count = current_trade_count
+
+            # Check for terminal status
+            if current_status in ("completed", "failed"):
+                if current_status != last_status:
+                    if current_status == "completed":
+                        complete_data = {
+                            "status": "completed",
+                            "final_value": run.final_value,
+                            "total_return": run.total_return,
+                            "total_trades": run.total_trades,
+                        }
+                        yield f"event: complete\ndata: {json.dumps(complete_data)}\n\n"
+                    else:  # failed
+                        error_data = {
+                            "status": "failed",
+                            "error_message": run.error_message,
+                        }
+                        yield f"event: error\ndata: {json.dumps(error_data)}\n\n"
+                return  # Close stream on terminal status
+
+            last_status = current_status
+
+        # Poll every 500ms
+        await asyncio.sleep(0.5)
+
+
+@router.get("/{backtest_id}/stream")
+async def stream_backtest(backtest_id: int):
+    """Stream real-time backtest updates via SSE.
+
+    Emits events:
+    - progress: Progress updates during execution
+    - trades: New trades as they occur
+    - complete: Backtest completed successfully
+    - error: Backtest failed or not found
+
+    Stream auto-closes when backtest reaches terminal status.
+    """
+    # Verify backtest exists before starting stream
+    with get_db() as db:
+        repo = BacktestRepository(db)
+        run = repo.get(backtest_id)
+        if run is None:
+            raise HTTPException(status_code=404, detail="Backtest not found")
+
+    return StreamingResponse(
+        _stream_backtest_updates(backtest_id),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        },
+    )

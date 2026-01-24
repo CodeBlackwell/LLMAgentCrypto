@@ -105,13 +105,13 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a developer, I need an SSE endpoint so the frontend can receive real-time backtest updates without polling.
 
 **Acceptance Criteria:**
-- [ ] Add `GET /backtests/{backtest_id}/stream` endpoint in `trading_lab/api/routes/backtests.py`
-- [ ] Return `StreamingResponse` with `media_type="text/event-stream"`
-- [ ] Emit event types: `progress`, `trades`, `complete`, `error`
-- [ ] Poll database every 500ms, emit only on changes
-- [ ] Auto-close stream when status is terminal (`completed` or `failed`)
-- [ ] Include `Cache-Control: no-cache` and `Connection: keep-alive` headers
-- [ ] Typecheck passes
+- [x] Add `GET /backtests/{backtest_id}/stream` endpoint in `trading_lab/api/routes/backtests.py`
+- [x] Return `StreamingResponse` with `media_type="text/event-stream"`
+- [x] Emit event types: `progress`, `trades`, `complete`, `error`
+- [x] Poll database every 500ms, emit only on changes
+- [x] Auto-close stream when status is terminal (`completed` or `failed`)
+- [x] Include `Cache-Control: no-cache` and `Connection: keep-alive` headers
+- [x] Typecheck passes
 
 ---
 

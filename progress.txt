@@ -31,3 +31,82 @@
   - Tests are located at trading_lab/tests/ not tests/
   - Follow existing patterns in repository (like update_status and update_results methods)
 ---
+
+## Iteration 3 - US-003: Add progress fields to API schema
+- What was implemented:
+  - Added 6 progress fields to BacktestResponse in api/schemas.py
+  - Fields: progress_percent, progress_message, current_date, total_days, processed_days, error_message
+  - GET /backtests/{id} endpoint automatically returns these fields via to_dict() conversion
+- Files changed:
+  - trading_lab/api/schemas.py
+- Learnings for future iterations:
+  - The API routes use `BacktestResponse(**run.to_dict())` pattern, so adding fields to both the schema and model's to_dict() is sufficient
+  - All 227 tests continue to pass
+---
+
+## Iteration 4 - US-004: Create ProgressTracker module
+- What was implemented:
+  - Created new `trading_lab/backtest/progress.py` module
+  - ProgressTracker class with __init__, update, set_phase, complete methods
+  - Calculates progress percent based on days processed / total days
+  - Throttles DB updates to max once per 500ms using time-based check
+  - Persists progress via BacktestRepository.update_progress()
+- Files changed:
+  - trading_lab/backtest/progress.py (new file)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Used TYPE_CHECKING for repository import to avoid circular imports
+  - Throttling uses time.time() * 1000 for millisecond precision
+  - complete() always persists immediately (ignores throttle) to ensure final state is saved
+---
+
+## Iteration 5 - US-005: Integrate progress tracking into backtest engine
+- What was implemented:
+  - Added optional `progress_tracker` parameter to BacktestEngine.__init__()
+  - Calculate total_days from date range at start of run
+  - Set phase transitions: "Fetching data...", "Simulating trades...", "Processing results..."
+  - Call progress_tracker.update() with end date after simulation completes
+  - Set total_days in database when progress_tracker is provided
+- Files changed:
+  - trading_lab/backtest/engine.py
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Lumibot's run_backtest() is a high-level blocking call that runs the entire simulation internally
+  - Per-day progress updates within simulation require strategy-level integration (see US-006)
+  - Use TYPE_CHECKING pattern to import ProgressTracker without circular imports
+  - All 227 tests continue to pass
+---
+
+## Iteration 6 - US-006: Wire progress tracker into BacktestRunner
+- What was implemented:
+  - Modified `BacktestRunner._run_backtest()` to create ProgressTracker instance
+  - Initialize total_days in database before running backtest
+  - Create fresh db session and ProgressTracker for engine use (within safe_signal_handling context)
+  - Pass progress_tracker to BacktestEngine via engine_kwargs
+  - Call progress_tracker.complete() on successful completion
+- Files changed:
+  - trading_lab/backtest/runner.py
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Need fresh db session within safe_signal_handling block for thread safety
+  - Create ProgressTracker twice: once to init total_days, once for engine (different db sessions)
+  - All 227 tests continue to pass
+---
+
+## Iteration 7 - US-007: Add SSE streaming endpoint
+- What was implemented:
+  - Added GET /backtests/{backtest_id}/stream endpoint in trading_lab/api/routes/backtests.py
+  - StreamingResponse with media_type="text/event-stream" and Cache-Control/Connection headers
+  - Emits event types: progress (progress updates), trades (new trades), complete (success), error (failure)
+  - Polls database every 500ms (asyncio.sleep), emits only on changes (tracks last_progress_percent, last_trade_count)
+  - Auto-closes stream when status is terminal (completed or failed)
+  - Removed unused ErrorResponse import (pre-existing lint issue)
+- Files changed:
+  - trading_lab/api/routes/backtests.py
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Use AsyncGenerator[str, None] for SSE streaming generator functions
+  - TradeRepository.list_for_backtest() returns trades for a given backtest_id
+  - SSE format: "event: {type}\ndata: {json}\n\n"
+  - All 227 tests continue to pass
+---
