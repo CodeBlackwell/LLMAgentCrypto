@@ -240,14 +240,14 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a user, I want to understand what each backtest parameter means.
 
 **Acceptance Criteria:**
-- [ ] In `trading_lab/web/src/pages/NewBacktest.jsx`, add tooltip icons next to form labels
-- [ ] Tooltips for:
+- [x] In `trading_lab/web/src/pages/NewBacktest.jsx`, add tooltip icons next to form labels
+- [x] Tooltips for:
   - Threshold: "Minimum confidence score (0-1) required to execute a trade"
   - Position Size: "Fraction of available cash to use per trade (0.25 = 25%)"
   - Initial Cash: "Starting capital for the backtest simulation"
-- [ ] Tooltip appears on hover with dark background
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Tooltip appears on hover with dark background
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ---
 

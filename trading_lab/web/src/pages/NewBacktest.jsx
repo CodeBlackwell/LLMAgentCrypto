@@ -3,6 +3,31 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { api } from '../api/client'
 
+function Tooltip({ text }) {
+  const [isVisible, setIsVisible] = useState(false)
+
+  return (
+    <span className="relative inline-block ml-1">
+      <button
+        type="button"
+        className="inline-flex items-center justify-center w-4 h-4 text-xs text-gray-500 bg-gray-200 rounded-full hover:bg-gray-300 focus:outline-none"
+        onMouseEnter={() => setIsVisible(true)}
+        onMouseLeave={() => setIsVisible(false)}
+        onFocus={() => setIsVisible(true)}
+        onBlur={() => setIsVisible(false)}
+      >
+        ?
+      </button>
+      {isVisible && (
+        <div className="absolute z-10 w-48 px-3 py-2 text-sm text-white bg-gray-800 rounded-lg shadow-lg -top-2 left-6">
+          {text}
+          <div className="absolute w-2 h-2 bg-gray-800 transform rotate-45 top-3 -left-1"></div>
+        </div>
+      )}
+    </span>
+  )
+}
+
 export default function NewBacktest() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -176,7 +201,10 @@ export default function NewBacktest() {
         {/* Trading Parameters */}
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label htmlFor="initial_cash" className="label">Initial Cash ($)</label>
+            <label htmlFor="initial_cash" className="label">
+              Initial Cash ($)
+              <Tooltip text="Starting capital for the backtest simulation" />
+            </label>
             <input
               id="initial_cash"
               name="initial_cash"
@@ -189,7 +217,10 @@ export default function NewBacktest() {
             />
           </div>
           <div>
-            <label htmlFor="threshold" className="label">Threshold</label>
+            <label htmlFor="threshold" className="label">
+              Threshold
+              <Tooltip text="Minimum confidence score (0-1) required to execute a trade" />
+            </label>
             <input
               id="threshold"
               name="threshold"
@@ -203,7 +234,10 @@ export default function NewBacktest() {
             />
           </div>
           <div>
-            <label htmlFor="cash_at_risk" className="label">Position Size</label>
+            <label htmlFor="cash_at_risk" className="label">
+              Position Size
+              <Tooltip text="Fraction of available cash to use per trade (0.25 = 25%)" />
+            </label>
             <input
               id="cash_at_risk"
               name="cash_at_risk"

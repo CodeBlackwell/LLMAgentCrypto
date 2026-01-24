@@ -252,3 +252,38 @@
   - npm run build verifies JSX/JS compilation for frontend code
   - All 227 tests continue to pass
 ---
+
+## Iteration 16 - US-016: Integrate SSE hook in BacktestDetail
+- What was implemented:
+  - Imported `useBacktestStream` hook in BacktestDetail.jsx
+  - Added `isActiveStatus` check to enable stream only when status is running/pending
+  - Merged stream data with query data (stream takes precedence for progress fields)
+  - Added useEffect to update React Query cache when stream data arrives
+  - Added separate polling query that is disabled when SSE is connected
+  - Added connection status indicator with green dot (connected) and yellow pulsing dot (reconnecting)
+- Files changed:
+  - trading_lab/web/src/pages/BacktestDetail.jsx
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Use separate queries for initial load and polling to maintain clean separation
+  - `queryClient.setQueryData()` allows manual cache updates from SSE stream
+  - Connection status indicator uses Tailwind's `animate-pulse` for reconnecting state
+  - Build still passes (npm run build) and all 227 tests continue to pass
+---
+
+## Iteration 17 - US-017: Add tooltips to form fields
+- What was implemented:
+  - Created inline Tooltip component in NewBacktest.jsx
+  - Tooltip uses useState for visibility, shows on hover/focus
+  - Added tooltip icons (? button) next to Initial Cash, Threshold, and Position Size labels
+  - Dark gray-800 background with white text, positioned to the right of the icon
+  - Includes arrow/caret pointing to the icon using rotated div
+- Files changed:
+  - trading_lab/web/src/pages/NewBacktest.jsx (added Tooltip component and 3 tooltip instances)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Inline components work well for simple UI elements like tooltips
+  - onMouseEnter/onMouseLeave plus onFocus/onBlur covers both mouse and keyboard accessibility
+  - z-10 ensures tooltip appears above other elements
+  - npm run build and all 227 tests continue to pass
+---
