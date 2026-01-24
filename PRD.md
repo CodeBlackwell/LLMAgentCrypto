@@ -135,8 +135,8 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a user, I want backtests to run faster through parallel execution.
 
 **Acceptance Criteria:**
-- [ ] Change `max_workers=2` to `max_workers=4` in `trading_lab/backtest/runner.py`
-- [ ] Typecheck passes
+- [x] Change `max_workers=2` to `max_workers=4` in `trading_lab/backtest/runner.py`
+- [x] Typecheck passes
 
 ---
 

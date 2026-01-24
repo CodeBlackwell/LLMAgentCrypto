@@ -130,3 +130,16 @@
   - Strategy validation requires registry access, better done at route level not schema
   - All 227 tests continue to pass
 ---
+
+## Iteration 9 - US-009: Increase worker pool and optimize runner
+- What was implemented:
+  - Changed `max_workers=2` to `max_workers=4` in BacktestRunner.__init__() default parameter
+  - This increases the maximum concurrent backtests from 2 to 4
+- Files changed:
+  - trading_lab/backtest/runner.py (line 55)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Simple configuration changes like this are straightforward
+  - ThreadPoolExecutor max_workers=4 is reasonable for most systems
+  - All 227 tests continue to pass
+---

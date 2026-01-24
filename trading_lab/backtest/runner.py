@@ -53,7 +53,7 @@ class BacktestRunner:
 
     def __init__(
         self,
-        max_workers: int = 2,
+        max_workers: int = 4,
         on_complete: Optional[Callable[[int, dict], None]] = None,
         on_error: Optional[Callable[[int, Exception], None]] = None,
     ):
