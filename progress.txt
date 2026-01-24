@@ -178,3 +178,19 @@
   - ESLint 9.x requires eslint.config.js but project doesn't have one - use build instead
   - All 227 tests continue to pass
 ---
+
+## Iteration 12 - US-012: Add loading spinner for BacktestDetail
+- What was implemented:
+  - Replaced simple "Loading backtest..." text with centered spinner animation
+  - Spinner uses Tailwind CSS classes: animate-spin, rounded-full, border styling
+  - Container uses flex centering with py-16 for vertical spacing
+  - Primary color border with transparent/light sides for spinning effect
+  - Text label below spinner says "Loading backtest..."
+- Files changed:
+  - trading_lab/web/src/pages/BacktestDetail.jsx (lines 73-80)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Tailwind spinner pattern: `animate-spin rounded-full h-12 w-12 border-4 border-X-200 border-t-X-600`
+  - npm run build verifies JSX compilation successfully
+  - All 227 tests continue to pass
+---

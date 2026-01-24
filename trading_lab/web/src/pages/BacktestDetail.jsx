@@ -71,7 +71,12 @@ export default function BacktestDetail() {
   })
 
   if (isLoading) {
-    return <div className="text-center py-8">Loading backtest...</div>
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600"></div>
+        <p className="mt-4 text-gray-500">Loading backtest...</p>
+      </div>
+    )
   }
 
   if (error) {

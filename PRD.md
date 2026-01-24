@@ -173,11 +173,11 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a user, I want visual feedback while the backtest details are loading.
 
 **Acceptance Criteria:**
-- [ ] In `trading_lab/web/src/pages/BacktestDetail.jsx`, replace "Loading backtest..." text
-- [ ] Show centered spinner animation using Tailwind CSS
-- [ ] Spinner visible until data loads
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] In `trading_lab/web/src/pages/BacktestDetail.jsx`, replace "Loading backtest..." text
+- [x] Show centered spinner animation using Tailwind CSS
+- [x] Spinner visible until data loads
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ---
 
