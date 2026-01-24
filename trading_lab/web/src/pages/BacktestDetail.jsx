@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
 import { useBacktestStream } from '../hooks/useBacktestStream'
+import LiveTradeFeed from '../components/LiveTradeFeed'
 import { format } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
@@ -287,6 +288,9 @@ export default function BacktestDetail() {
               <p className="text-sm text-blue-600 mt-2">{backtest.progress_message}</p>
             )}
           </div>
+
+          {/* Live Trade Feed */}
+          <LiveTradeFeed trades={streamData?.trades || []} />
         </div>
       )}
 

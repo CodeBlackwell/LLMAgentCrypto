@@ -314,13 +314,13 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a user, I want to see the live trade feed while my backtest is running.
 
 **Acceptance Criteria:**
-- [ ] Import `LiveTradeFeed` in `BacktestDetail.jsx`
-- [ ] Show component only when `isRunning` is true
-- [ ] Pass trades from SSE stream to component
-- [ ] Position below progress bar
-- [ ] Hide when backtest completes
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Import `LiveTradeFeed` in `BacktestDetail.jsx`
+- [x] Show component only when `isRunning` is true
+- [x] Pass trades from SSE stream to component
+- [x] Position below progress bar
+- [x] Hide when backtest completes
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ---
 
