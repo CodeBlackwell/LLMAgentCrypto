@@ -299,14 +299,14 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a user, I want to see trades happening in real-time during backtest execution.
 
 **Acceptance Criteria:**
-- [ ] Create `trading_lab/web/src/components/LiveTradeFeed.jsx`
-- [ ] Dark terminal-style design (gray-900 background, monospace font)
-- [ ] Show last 10 trades with auto-scroll to bottom
-- [ ] Color-coded: green text for BUY, red for SELL
-- [ ] Display: side, quantity, price, timestamp
-- [ ] Show "Waiting for trades..." when empty
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Create `trading_lab/web/src/components/LiveTradeFeed.jsx`
+- [x] Dark terminal-style design (gray-900 background, monospace font)
+- [x] Show last 10 trades with auto-scroll to bottom
+- [x] Color-coded: green text for BUY, red for SELL
+- [x] Display: side, quantity, price, timestamp
+- [x] Show "Waiting for trades..." when empty
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ---
 
