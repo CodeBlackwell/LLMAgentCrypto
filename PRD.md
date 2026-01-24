@@ -21,16 +21,16 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a developer, I need to store backtest progress in the database so it can be queried and displayed.
 
 **Acceptance Criteria:**
-- [ ] Add to `BacktestRun` model in `trading_lab/storage/models.py`:
+- [x] Add to `BacktestRun` model in `trading_lab/storage/models.py`:
   - `progress_percent = Column(Float, nullable=True, default=0.0)`
   - `progress_message = Column(String(255), nullable=True)`
   - `current_date = Column(DateTime, nullable=True)`
   - `total_days = Column(Integer, nullable=True)`
   - `processed_days = Column(Integer, nullable=True, default=0)`
-- [ ] Update `to_dict()` method to include all progress fields
-- [ ] Ensure `error_message` is included in `to_dict()` output
-- [ ] Application starts without errors
-- [ ] Typecheck passes
+- [x] Update `to_dict()` method to include all progress fields
+- [x] Ensure `error_message` is included in `to_dict()` output
+- [x] Application starts without errors
+- [x] Typecheck passes
 
 ---
 

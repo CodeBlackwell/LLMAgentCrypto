@@ -2,5 +2,19 @@
 
 ## Learnings
 (Patterns discovered during implementation)
+- The trading_lab.db file persists between runs and doesn't auto-migrate. When adding new columns, delete the db file to recreate schema.
+- Tests use in-memory SQLite via fixtures, but the app may init the real db first. The `override_db` fixture patches the database module.
+- No mypy in project - uses ruff for linting. Import verification via python -c is sufficient for typecheck.
 
+---
+
+## Iteration 1 - US-001: Add progress fields to database schema
+- What was implemented:
+  - Added 5 new columns to BacktestRun model: progress_percent, progress_message, current_date, total_days, processed_days
+  - Updated to_dict() method to include all progress fields plus error_message
+- Files changed:
+  - trading_lab/storage/models.py
+- Learnings for future iterations:
+  - SQLite database file (trading_lab.db) must be deleted when schema changes since there's no migration tool
+  - All 227 tests pass after schema update
 ---

@@ -65,6 +65,13 @@ class BacktestRun(Base):
     status = Column(String(20), default="pending")
     error_message = Column(Text, nullable=True)
 
+    # Progress tracking
+    progress_percent = Column(Float, nullable=True, default=0.0)
+    progress_message = Column(String(255), nullable=True)
+    current_date = Column(DateTime, nullable=True)
+    total_days = Column(Integer, nullable=True)
+    processed_days = Column(Integer, nullable=True, default=0)
+
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     started_at = Column(DateTime, nullable=True)
@@ -109,6 +116,12 @@ class BacktestRun(Base):
             "sharpe_ratio": self.sharpe_ratio,
             "max_drawdown": self.max_drawdown,
             "status": self.status,
+            "error_message": self.error_message,
+            "progress_percent": self.progress_percent,
+            "progress_message": self.progress_message,
+            "current_date": self.current_date.isoformat() if self.current_date else None,
+            "total_days": self.total_days,
+            "processed_days": self.processed_days,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "completed_at": self.completed_at.isoformat() if self.completed_at else None,
         }
