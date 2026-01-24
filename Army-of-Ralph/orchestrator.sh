@@ -1,6 +1,7 @@
 #!/bin/bash
 # Army-of-Ralph Orchestrator
 # Manages wave execution for Trading Lab usability improvements
+# Compatible with Bash 3 (macOS default)
 
 set -e
 
@@ -10,10 +11,10 @@ PROGRESS_DIR="$SCRIPT_DIR/progress"
 POLL_INTERVAL=30
 
 # Wave definitions
-WAVE_0_AGENTS=("foundation")
-WAVE_1_AGENTS=("progress" "validation" "performance")
-WAVE_2_AGENTS=("sse-backend")
-WAVE_3_AGENTS=("ui-feedback" "sse-frontend" "form-ux" "trade-feed")
+WAVE_0_AGENTS="foundation"
+WAVE_1_AGENTS="progress validation performance"
+WAVE_2_AGENTS="sse-backend"
+WAVE_3_AGENTS="ui-feedback sse-frontend form-ux trade-feed"
 
 # Colors for output
 RED='\033[0;31m'
@@ -39,14 +40,14 @@ check_agent_complete() {
     return 1
 }
 
-check_wave_complete() {
-    local -n agents=$1
-    for agent in "${agents[@]}"; do
-        if ! check_agent_complete "$agent"; then
-            return 1
-        fi
-    done
-    return 0
+get_wave_agents() {
+    local wave_num=$1
+    case $wave_num in
+        0) echo "$WAVE_0_AGENTS" ;;
+        1) echo "$WAVE_1_AGENTS" ;;
+        2) echo "$WAVE_2_AGENTS" ;;
+        3) echo "$WAVE_3_AGENTS" ;;
+    esac
 }
 
 launch_agent() {
@@ -55,6 +56,14 @@ launch_agent() {
     local session_name="tlab-${agent_name}"
 
     log "${BLUE}Launching agent: $agent_name (Wave $wave_num)${NC}"
+
+    # Check if tmux is available
+    if ! command -v tmux &> /dev/null; then
+        log "${YELLOW}tmux not available, running agent directly...${NC}"
+        "$SCRIPT_DIR/tlab-agent.sh" "$agent_name" "$wave_num" 2>&1 | tee "$LOG_DIR/tlab-${agent_name}-agent.log" &
+        log "${GREEN}Agent $agent_name launched in background${NC}"
+        return
+    fi
 
     if tmux has-session -t "$session_name" 2>/dev/null; then
         log "${YELLOW}Session $session_name already exists, skipping...${NC}"
@@ -69,15 +78,15 @@ launch_agent() {
 
 run_wave() {
     local wave_num=$1
-    local -n agents=$2
-    local wave_name=$3
+    local wave_name=$2
+    local agents=$(get_wave_agents $wave_num)
 
     log "${BLUE}========================================${NC}"
     log "${BLUE}Starting Wave $wave_num: $wave_name${NC}"
     log "${BLUE}========================================${NC}"
 
     # Launch all agents in this wave
-    for agent in "${agents[@]}"; do
+    for agent in $agents; do
         launch_agent "$agent" "$wave_num"
     done
 
@@ -88,11 +97,12 @@ run_wave() {
         sleep "$POLL_INTERVAL"
 
         local completed=0
-        local total=${#agents[@]}
+        local total=0
 
-        for agent in "${agents[@]}"; do
+        for agent in $agents; do
+            total=$((total + 1))
             if check_agent_complete "$agent"; then
-                ((completed++))
+                completed=$((completed + 1))
             fi
         done
 
@@ -107,14 +117,14 @@ run_wave() {
 
 merge_wave_branches() {
     local wave_num=$1
-    local -n agents=$2
+    local agents=$(get_wave_agents $wave_num)
 
     log "Merging Wave $wave_num branches to main..."
 
     cd "$SCRIPT_DIR/.."
     git checkout main
 
-    for agent in "${agents[@]}"; do
+    for agent in $agents; do
         local branch_name="wave-${wave_num}/tlab-${agent}-agent"
         if git show-ref --verify --quiet "refs/heads/$branch_name"; then
             log "Merging $branch_name..."
@@ -134,14 +144,13 @@ show_status() {
     echo -e "\n${BLUE}=== Army-of-Ralph Status ===${NC}\n"
 
     for wave in 0 1 2 3; do
-        local wave_var="WAVE_${wave}_AGENTS[@]"
-        local agents=("${!wave_var}")
+        local agents=$(get_wave_agents $wave)
 
         echo -e "${YELLOW}Wave $wave:${NC}"
-        for agent in "${agents[@]}"; do
+        for agent in $agents; do
             if check_agent_complete "$agent"; then
                 echo -e "  ${GREEN}[COMPLETE]${NC} tlab-$agent"
-            elif tmux has-session -t "tlab-$agent" 2>/dev/null; then
+            elif command -v tmux &> /dev/null && tmux has-session -t "tlab-$agent" 2>/dev/null; then
                 echo -e "  ${BLUE}[RUNNING]${NC}  tlab-$agent"
             else
                 echo -e "  ${NC}[PENDING]${NC}  tlab-$agent"
@@ -157,30 +166,34 @@ dry_run() {
     echo ""
 
     echo "Wave 0 (Sequential):"
-    for agent in "${WAVE_0_AGENTS[@]}"; do
+    for agent in $WAVE_0_AGENTS; do
         echo "  - tlab-$agent"
     done
     echo ""
 
     echo "Wave 1 (Parallel):"
-    for agent in "${WAVE_1_AGENTS[@]}"; do
+    for agent in $WAVE_1_AGENTS; do
         echo "  - tlab-$agent"
     done
     echo ""
 
     echo "Wave 2 (Sequential):"
-    for agent in "${WAVE_2_AGENTS[@]}"; do
+    for agent in $WAVE_2_AGENTS; do
         echo "  - tlab-$agent"
     done
     echo ""
 
     echo "Wave 3 (Parallel):"
-    for agent in "${WAVE_3_AGENTS[@]}"; do
+    for agent in $WAVE_3_AGENTS; do
         echo "  - tlab-$agent"
     done
     echo ""
 
-    echo "Total agents: $((${#WAVE_0_AGENTS[@]} + ${#WAVE_1_AGENTS[@]} + ${#WAVE_2_AGENTS[@]} + ${#WAVE_3_AGENTS[@]}))"
+    local total=0
+    for agent in $WAVE_0_AGENTS $WAVE_1_AGENTS $WAVE_2_AGENTS $WAVE_3_AGENTS; do
+        total=$((total + 1))
+    done
+    echo "Total agents: $total"
 }
 
 usage() {
@@ -236,23 +249,23 @@ main() {
 
     # Execute waves
     if [[ $start_wave -le 0 ]]; then
-        run_wave 0 WAVE_0_AGENTS "Foundation"
-        merge_wave_branches 0 WAVE_0_AGENTS
+        run_wave 0 "Foundation"
+        merge_wave_branches 0
     fi
 
     if [[ $start_wave -le 1 ]]; then
-        run_wave 1 WAVE_1_AGENTS "Backend Features"
-        merge_wave_branches 1 WAVE_1_AGENTS
+        run_wave 1 "Backend Features"
+        merge_wave_branches 1
     fi
 
     if [[ $start_wave -le 2 ]]; then
-        run_wave 2 WAVE_2_AGENTS "SSE Backend"
-        merge_wave_branches 2 WAVE_2_AGENTS
+        run_wave 2 "SSE Backend"
+        merge_wave_branches 2
     fi
 
     if [[ $start_wave -le 3 ]]; then
-        run_wave 3 WAVE_3_AGENTS "Frontend"
-        merge_wave_branches 3 WAVE_3_AGENTS
+        run_wave 3 "Frontend"
+        merge_wave_branches 3
     fi
 
     log "${GREEN}========================================${NC}"
