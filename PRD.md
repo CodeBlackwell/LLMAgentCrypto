@@ -255,18 +255,18 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a user, I want immediate feedback when I enter invalid values before submitting.
 
 **Acceptance Criteria:**
-- [ ] In `trading_lab/web/src/pages/NewBacktest.jsx`, add `validationErrors` state
-- [ ] Validate on blur and on submit:
+- [x] In `trading_lab/web/src/pages/NewBacktest.jsx`, add `validationErrors` state
+- [x] Validate on blur and on submit:
   - Strategy is selected
   - End date > Start date
   - Date range <= 2 years
   - Initial cash >= $100
   - Threshold between 0 and 1
   - Position size between 0 and 1
-- [ ] Show inline error messages below invalid fields (red text)
-- [ ] Disable submit button when any validation fails
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Show inline error messages below invalid fields (red text)
+- [x] Disable submit button when any validation fails
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ---
 

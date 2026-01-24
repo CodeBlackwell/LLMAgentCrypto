@@ -47,6 +47,67 @@ export default function NewBacktest() {
   })
 
   const [error, setError] = useState(null)
+  const [validationErrors, setValidationErrors] = useState({})
+
+  // Validation functions
+  const validateField = (name, value, formData = form) => {
+    switch (name) {
+      case 'strategy_name':
+        return !value ? 'Please select a strategy' : ''
+      case 'start_date':
+      case 'end_date': {
+        if (!value) return 'Date is required'
+        const start = new Date(name === 'start_date' ? value : formData.start_date)
+        const end = new Date(name === 'end_date' ? value : formData.end_date)
+        if (name === 'end_date' && end <= start) {
+          return 'End date must be after start date'
+        }
+        const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24))
+        if (daysDiff > 730) {
+          return 'Date range cannot exceed 2 years (730 days)'
+        }
+        return ''
+      }
+      case 'initial_cash':
+        return value < 100 ? 'Initial cash must be at least $100' : ''
+      case 'threshold':
+        return (value < 0 || value > 1) ? 'Threshold must be between 0 and 1' : ''
+      case 'cash_at_risk':
+        return (value < 0 || value > 1) ? 'Position size must be between 0 and 1' : ''
+      default:
+        return ''
+    }
+  }
+
+  const validateAllFields = () => {
+    const errors = {}
+    const fieldsToValidate = ['strategy_name', 'start_date', 'end_date', 'initial_cash', 'threshold', 'cash_at_risk']
+    fieldsToValidate.forEach(field => {
+      const error = validateField(field, form[field], form)
+      if (error) errors[field] = error
+    })
+    return errors
+  }
+
+  const handleBlur = (e) => {
+    const { name, value, type } = e.target
+    const fieldValue = type === 'number' ? parseFloat(value) : value
+    const error = validateField(name, fieldValue, form)
+    setValidationErrors(prev => ({
+      ...prev,
+      [name]: error
+    }))
+    // Also validate related date field when blurring start_date or end_date
+    if (name === 'start_date') {
+      const endError = validateField('end_date', form.end_date, { ...form, start_date: fieldValue })
+      setValidationErrors(prev => ({ ...prev, end_date: endError }))
+    } else if (name === 'end_date') {
+      const startError = validateField('start_date', form.start_date, { ...form, end_date: fieldValue })
+      setValidationErrors(prev => ({ ...prev, start_date: startError }))
+    }
+  }
+
+  const hasValidationErrors = Object.values(validationErrors).some(error => error !== '')
 
   const { data: strategies } = useQuery({
     queryKey: ['strategies'],
@@ -89,6 +150,11 @@ export default function NewBacktest() {
   const handleSubmit = (e) => {
     e.preventDefault()
     setError(null)
+    const errors = validateAllFields()
+    setValidationErrors(errors)
+    if (Object.values(errors).some(error => error !== '')) {
+      return
+    }
     createMutation.mutate(form)
   }
 
@@ -127,8 +193,9 @@ export default function NewBacktest() {
             name="strategy_name"
             value={form.strategy_name}
             onChange={handleChange}
+            onBlur={handleBlur}
             required
-            className="input"
+            className={`input ${validationErrors.strategy_name ? 'border-red-500' : ''}`}
           >
             <option value="">Select a strategy...</option>
             {strategies?.strategies?.map(s => (
@@ -137,6 +204,9 @@ export default function NewBacktest() {
               </option>
             ))}
           </select>
+          {validationErrors.strategy_name && (
+            <p className="mt-1 text-sm text-red-600">{validationErrors.strategy_name}</p>
+          )}
         </div>
 
         {/* Asset Configuration */}
@@ -180,9 +250,13 @@ export default function NewBacktest() {
               type="date"
               value={form.start_date}
               onChange={handleChange}
+              onBlur={handleBlur}
               required
-              className="input"
+              className={`input ${validationErrors.start_date ? 'border-red-500' : ''}`}
             />
+            {validationErrors.start_date && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.start_date}</p>
+            )}
           </div>
           <div>
             <label htmlFor="end_date" className="label">End Date</label>
@@ -192,9 +266,13 @@ export default function NewBacktest() {
               type="date"
               value={form.end_date}
               onChange={handleChange}
+              onBlur={handleBlur}
               required
-              className="input"
+              className={`input ${validationErrors.end_date ? 'border-red-500' : ''}`}
             />
+            {validationErrors.end_date && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.end_date}</p>
+            )}
           </div>
         </div>
 
@@ -213,8 +291,12 @@ export default function NewBacktest() {
               step="1000"
               value={form.initial_cash}
               onChange={handleChange}
-              className="input"
+              onBlur={handleBlur}
+              className={`input ${validationErrors.initial_cash ? 'border-red-500' : ''}`}
             />
+            {validationErrors.initial_cash && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.initial_cash}</p>
+            )}
           </div>
           <div>
             <label htmlFor="threshold" className="label">
@@ -230,8 +312,12 @@ export default function NewBacktest() {
               step="0.05"
               value={form.threshold}
               onChange={handleChange}
-              className="input"
+              onBlur={handleBlur}
+              className={`input ${validationErrors.threshold ? 'border-red-500' : ''}`}
             />
+            {validationErrors.threshold && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.threshold}</p>
+            )}
           </div>
           <div>
             <label htmlFor="cash_at_risk" className="label">
@@ -247,8 +333,12 @@ export default function NewBacktest() {
               step="0.05"
               value={form.cash_at_risk}
               onChange={handleChange}
-              className="input"
+              onBlur={handleBlur}
+              className={`input ${validationErrors.cash_at_risk ? 'border-red-500' : ''}`}
             />
+            {validationErrors.cash_at_risk && (
+              <p className="mt-1 text-sm text-red-600">{validationErrors.cash_at_risk}</p>
+            )}
           </div>
         </div>
 
@@ -275,8 +365,8 @@ export default function NewBacktest() {
         <div className="flex gap-4 pt-4">
           <button
             type="submit"
-            disabled={createMutation.isPending}
-            className="btn btn-primary flex-1"
+            disabled={createMutation.isPending || hasValidationErrors}
+            className={`btn btn-primary flex-1 ${hasValidationErrors ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {createMutation.isPending ? 'Starting...' : 'Start Backtest'}
           </button>
