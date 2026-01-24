@@ -9,6 +9,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="$SCRIPT_DIR/logs"
 PROGRESS_DIR="$SCRIPT_DIR/progress"
 POLL_INTERVAL=30
+TIMING_FILE="$LOG_DIR/timing.txt"
+ORCHESTRATOR_START=""
 
 # Wave definitions
 WAVE_0_AGENTS="foundation"
@@ -40,6 +42,80 @@ check_agent_complete() {
     return 1
 }
 
+# Progress tracking functions
+count_tasks() {
+    local file=$1
+    local total=$(grep -c '^\s*- \[' "$file" 2>/dev/null || echo 0)
+    local done=$(grep -c '^\s*- \[x\]' "$file" 2>/dev/null || echo 0)
+    echo "$done/$total"
+}
+
+get_progress_percent() {
+    local file=$1
+    local total=$(grep -c '^\s*- \[' "$file" 2>/dev/null || echo 1)
+    local done=$(grep -c '^\s*- \[x\]' "$file" 2>/dev/null || echo 0)
+    if [[ $total -eq 0 ]]; then
+        echo 0
+    else
+        echo $((done * 100 / total))
+    fi
+}
+
+get_current_task() {
+    local file=$1
+    # Get first unchecked item as current task
+    local task=$(grep '^\s*- \[ \]' "$file" 2>/dev/null | head -1 | sed 's/.*\] //' | cut -c1-40)
+    if [[ -n "$task" ]]; then
+        echo "$task"
+    else
+        echo "-"
+    fi
+}
+
+# Timing functions
+record_timing() {
+    local agent=$1
+    local event=$2  # start or end
+    mkdir -p "$LOG_DIR"
+    echo "${agent}:${event}:$(date +%s)" >> "$TIMING_FILE"
+}
+
+get_elapsed() {
+    local agent=$1
+    if [[ ! -f "$TIMING_FILE" ]]; then
+        echo "waiting"
+        return
+    fi
+    local start=$(grep "^${agent}:start:" "$TIMING_FILE" 2>/dev/null | tail -1 | cut -d: -f3)
+    if [[ -n "$start" ]]; then
+        local now=$(date +%s)
+        local elapsed=$((now - start))
+        printf "%dm %ds" $((elapsed/60)) $((elapsed%60))
+    else
+        echo "waiting"
+    fi
+}
+
+get_total_elapsed() {
+    if [[ -n "$ORCHESTRATOR_START" ]]; then
+        local now=$(date +%s)
+        local elapsed=$((now - ORCHESTRATOR_START))
+        printf "%dm %ds" $((elapsed/60)) $((elapsed%60))
+    else
+        echo "0m 0s"
+    fi
+}
+
+get_wave_name() {
+    local wave=$1
+    case $wave in
+        0) echo "Foundation" ;;
+        1) echo "Backend Features" ;;
+        2) echo "SSE Backend" ;;
+        3) echo "Frontend" ;;
+    esac
+}
+
 get_wave_agents() {
     local wave_num=$1
     case $wave_num in
@@ -56,6 +132,9 @@ launch_agent() {
     local session_name="tlab-${agent_name}"
 
     log "${BLUE}Launching agent: $agent_name (Wave $wave_num)${NC}"
+
+    # Record timing
+    record_timing "$agent_name" "start"
 
     # Check if tmux is available
     if ! command -v tmux &> /dev/null; then
@@ -141,19 +220,78 @@ merge_wave_branches() {
 }
 
 show_status() {
-    echo -e "\n${BLUE}=== Army-of-Ralph Status ===${NC}\n"
+    # Get total elapsed if orchestrator start time exists in timing file
+    local total_elapsed=""
+    if [[ -f "$TIMING_FILE" ]]; then
+        local orch_start=$(grep "^orchestrator:start:" "$TIMING_FILE" 2>/dev/null | tail -1 | cut -d: -f3)
+        if [[ -n "$orch_start" ]]; then
+            local now=$(date +%s)
+            local elapsed=$((now - orch_start))
+            total_elapsed=$(printf "[Elapsed: %dm %ds]" $((elapsed/60)) $((elapsed%60)))
+        fi
+    fi
+
+    echo -e "\n${BLUE}=== Army-of-Ralph Status ===${NC} ${YELLOW}$total_elapsed${NC}\n"
 
     for wave in 0 1 2 3; do
         local agents=$(get_wave_agents $wave)
+        local wave_name=$(get_wave_name $wave)
 
-        echo -e "${YELLOW}Wave $wave:${NC}"
+        # Determine wave status
+        local wave_complete=true
+        local wave_running=false
         for agent in $agents; do
             if check_agent_complete "$agent"; then
-                echo -e "  ${GREEN}[COMPLETE]${NC} tlab-$agent"
+                :
             elif command -v tmux &> /dev/null && tmux has-session -t "tlab-$agent" 2>/dev/null; then
-                echo -e "  ${BLUE}[RUNNING]${NC}  tlab-$agent"
+                wave_complete=false
+                wave_running=true
             else
-                echo -e "  ${NC}[PENDING]${NC}  tlab-$agent"
+                # Check if agent is running as background process
+                if pgrep -f "tlab-agent.sh $agent" > /dev/null 2>&1; then
+                    wave_complete=false
+                    wave_running=true
+                else
+                    wave_complete=false
+                fi
+            fi
+        done
+
+        local wave_status=""
+        if $wave_complete; then
+            wave_status="${GREEN}[COMPLETE]${NC}"
+        elif $wave_running; then
+            wave_status="${BLUE}[IN PROGRESS]${NC}"
+        else
+            wave_status="${NC}[PENDING]${NC}"
+        fi
+
+        echo -e "${YELLOW}Wave $wave: $wave_name${NC} $wave_status"
+
+        for agent in $agents; do
+            local progress_file="$PROGRESS_DIR/progress-tlab-${agent}.txt"
+            local tasks=$(count_tasks "$progress_file")
+            local percent=$(get_progress_percent "$progress_file")
+            local elapsed=$(get_elapsed "$agent")
+            local current=$(get_current_task "$progress_file")
+
+            # Truncate current task if too long
+            if [[ ${#current} -gt 35 ]]; then
+                current="${current:0:32}..."
+            fi
+
+            if check_agent_complete "$agent"; then
+                printf "  ${GREEN}✓${NC} %-18s ${GREEN}[%3d%%]${NC} %s │ %s\n" \
+                    "tlab-$agent" "$percent" "$tasks" "$elapsed"
+            elif command -v tmux &> /dev/null && tmux has-session -t "tlab-$agent" 2>/dev/null; then
+                printf "  ${BLUE}●${NC} %-18s ${BLUE}[%3d%%]${NC} %s │ %s │ %s\n" \
+                    "tlab-$agent" "$percent" "$tasks" "$elapsed" "$current"
+            elif pgrep -f "tlab-agent.sh $agent" > /dev/null 2>&1; then
+                printf "  ${BLUE}●${NC} %-18s ${BLUE}[%3d%%]${NC} %s │ %s │ %s\n" \
+                    "tlab-$agent" "$percent" "$tasks" "$elapsed" "$current"
+            else
+                printf "  ${NC}○${NC} %-18s ${NC}[%3d%%]${NC} %s │ %s\n" \
+                    "tlab-$agent" "$percent" "$tasks" "$elapsed"
             fi
         done
         echo ""
@@ -243,6 +381,10 @@ main() {
 
     # Ensure log directory exists
     mkdir -p "$LOG_DIR"
+
+    # Record orchestrator start time
+    ORCHESTRATOR_START=$(date +%s)
+    record_timing "orchestrator" "start"
 
     log "${GREEN}Army-of-Ralph Orchestrator Starting${NC}"
     log "Starting from Wave $start_wave"
