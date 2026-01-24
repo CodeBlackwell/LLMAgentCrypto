@@ -143,3 +143,38 @@
   - ThreadPoolExecutor max_workers=4 is reasonable for most systems
   - All 227 tests continue to pass
 ---
+
+## Iteration 10 - US-010: Create data cache module
+- What was implemented:
+  - Created `trading_lab/backtest/cache.py` with DataCache class
+  - get() method retrieves cached DataFrame by asset/exchange/date range, returns None if not found
+  - set() method stores DataFrame as pickle file in .backtest_cache/ directory
+  - clear() method removes all .pkl files from cache directory
+  - Cache key uses MD5 hash of asset_exchange_startdate_enddate string
+  - Added .backtest_cache/ to .gitignore
+- Files changed:
+  - trading_lab/backtest/cache.py (new file)
+  - .gitignore (added .backtest_cache/)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - TYPE_CHECKING pattern used for DataFrame import to avoid pandas dependency issues
+  - Pickle files with .pkl extension for serialization
+  - Exception handling for corrupted cache files (auto-cleanup on read failure)
+  - All 227 tests continue to pass
+---
+
+## Iteration 11 - US-011: Display error banner for failed backtests
+- What was implemented:
+  - Error banner for failed backtests was already implemented in BacktestDetail.jsx (lines 141-166)
+  - Red background (`bg-red-50 border border-red-200`) with SVG error icon
+  - Displays `backtest.error_message` in `<pre>` tag with monospace font
+  - Banner appears prominently after header, at top of results section
+  - Only shows when `backtest.status === 'failed'` AND `backtest.error_message` exists
+- Files changed:
+  - PRD.md (marked task complete - implementation already existed)
+- Learnings for future iterations:
+  - Check existing code before implementing - task may already be done
+  - Frontend build with `npm run build` is sufficient to verify JSX compilation
+  - ESLint 9.x requires eslint.config.js but project doesn't have one - use build instead
+  - All 227 tests continue to pass
+---

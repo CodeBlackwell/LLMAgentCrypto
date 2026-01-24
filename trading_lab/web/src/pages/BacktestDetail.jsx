@@ -138,6 +138,33 @@ export default function BacktestDetail() {
         </div>
       </div>
 
+      {/* Error Banner */}
+      {backtest.status === 'failed' && backtest.error_message && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <svg
+              className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <div className="flex-1">
+              <h4 className="text-red-800 font-semibold">Backtest Failed</h4>
+              <pre className="mt-2 text-sm text-red-700 whitespace-pre-wrap font-mono bg-red-100 rounded p-3 overflow-x-auto">
+                {backtest.error_message}
+              </pre>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Metrics */}
       <div className="card">
         <h3 className="font-semibold text-gray-900 mb-4">Performance Metrics</h3>

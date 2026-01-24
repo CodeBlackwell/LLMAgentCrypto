@@ -160,12 +160,12 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a user, I want to see why my backtest failed so I can fix the issue.
 
 **Acceptance Criteria:**
-- [ ] In `trading_lab/web/src/pages/BacktestDetail.jsx`, add error banner when `backtest.status === 'failed'`
-- [ ] Banner has red background with error icon
-- [ ] Display `backtest.error_message` in `<pre>` tag for formatting
-- [ ] Banner appears prominently at top of results section
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] In `trading_lab/web/src/pages/BacktestDetail.jsx`, add error banner when `backtest.status === 'failed'`
+- [x] Banner has red background with error icon
+- [x] Display `backtest.error_message` in `<pre>` tag for formatting
+- [x] Banner appears prominently at top of results section
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ---
 
