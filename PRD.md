@@ -198,13 +198,13 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a user, I want to see backtest progress as a percentage so I know how much longer to wait.
 
 **Acceptance Criteria:**
-- [ ] In `trading_lab/web/src/pages/BacktestDetail.jsx`, add progress bar when running
-- [ ] Progress bar shows `progress_percent` with animated width transition
-- [ ] Display percentage as large bold text
-- [ ] Show "Day X/Y" using `processed_days` and `total_days`
-- [ ] Show `progress_message` below progress bar
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] In `trading_lab/web/src/pages/BacktestDetail.jsx`, add progress bar when running
+- [x] Progress bar shows `progress_percent` with animated width transition
+- [x] Display percentage as large bold text
+- [x] Show "Day X/Y" using `processed_days` and `total_days`
+- [x] Show `progress_message` below progress bar
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ---
 

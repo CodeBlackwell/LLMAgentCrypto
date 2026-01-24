@@ -194,3 +194,41 @@
   - npm run build verifies JSX compilation successfully
   - All 227 tests continue to pass
 ---
+
+## Iteration 13 - US-013: Add running state indicator with elapsed time
+- What was implemented:
+  - Added blue banner (`bg-blue-50 border border-blue-200`) when `isRunning` is true
+  - Included spinning loader animation (smaller version: h-6 w-6, border-2)
+  - Display "Processing historical data for {asset}..." dynamically with asset name
+  - Added `useState` and `useEffect` for elapsed time tracking
+  - `formatElapsedTime()` helper converts seconds to human-readable format (Xh Xm Xs)
+  - Timer updates every second using `setInterval`, with cleanup on unmount
+- Files changed:
+  - trading_lab/web/src/pages/BacktestDetail.jsx (added imports, helper function, state, effect, and banner)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Use optional chaining (`backtest?.created_at`) in useEffect dependencies
+  - Timer cleanup is critical to avoid memory leaks
+  - API server runs on port 8847, frontend on port 3847
+  - Known bug: signal_provider must be explicitly passed (None causes validation error)
+  - Exchange names are case-sensitive (use "kraken" not "Kraken")
+  - All 227 tests continue to pass
+---
+
+## Iteration 14 - US-014: Add progress bar display
+- What was implemented:
+  - Added progress bar section inside the running state indicator banner
+  - Large bold percentage text (text-3xl font-bold) displaying progress_percent
+  - "Day X/Y" counter using processed_days and total_days
+  - Visual progress bar with animated width transition (transition-all duration-500 ease-out)
+  - Blue color scheme consistent with running state indicator (bg-blue-200 bar, bg-blue-600 fill)
+  - Conditional progress_message display below the progress bar
+- Files changed:
+  - trading_lab/web/src/pages/BacktestDetail.jsx (added progress bar section at lines 229-245)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Use nullish coalescing (?? 0) for progress values that may be null/undefined
+  - Tailwind transition classes work well for smooth progress bar animations
+  - Progress bar should be nested inside existing running state banner for visual cohesion
+  - All 227 tests continue to pass
+---

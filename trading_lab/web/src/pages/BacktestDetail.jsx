@@ -225,6 +225,29 @@ export default function BacktestDetail() {
               </p>
             </div>
           </div>
+
+          {/* Progress Bar */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-3xl font-bold text-blue-800">
+                {(backtest.progress_percent ?? 0).toFixed(0)}%
+              </span>
+              {backtest.total_days != null && (
+                <span className="text-sm text-blue-600">
+                  Day {backtest.processed_days ?? 0}/{backtest.total_days}
+                </span>
+              )}
+            </div>
+            <div className="w-full bg-blue-200 rounded-full h-3 overflow-hidden">
+              <div
+                className="bg-blue-600 h-3 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${backtest.progress_percent ?? 0}%` }}
+              ></div>
+            </div>
+            {backtest.progress_message && (
+              <p className="text-sm text-blue-600 mt-2">{backtest.progress_message}</p>
+            )}
+          </div>
         </div>
       )}
 
