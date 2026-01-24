@@ -75,7 +75,7 @@ log "Log file: $LOG_FILE"
 
 # Launch Claude with the agent spec as context
 # The agent spec serves as the system prompt/instructions
-exec claude --print "$AGENT_SPEC_CONTENT
+exec claude --dangerously-skip-permissions -p "$AGENT_SPEC_CONTENT
 
 Please implement all the user stories listed above. Follow the acceptance criteria exactly.
 
