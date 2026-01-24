@@ -226,13 +226,13 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a user, I want real-time updates without page refresh while my backtest runs.
 
 **Acceptance Criteria:**
-- [ ] Import and use `useBacktestStream` in `BacktestDetail.jsx`
-- [ ] Enable stream only when status is `running` or `pending`
-- [ ] Merge stream data with React Query cache
-- [ ] Show connection status indicator (green dot = connected, yellow = reconnecting)
-- [ ] Disable polling when SSE is connected
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] Import and use `useBacktestStream` in `BacktestDetail.jsx`
+- [x] Enable stream only when status is `running` or `pending`
+- [x] Merge stream data with React Query cache
+- [x] Show connection status indicator (green dot = connected, yellow = reconnecting)
+- [x] Disable polling when SSE is connected
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ---
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
+import { useBacktestStream } from '../hooks/useBacktestStream'
 import { format } from 'date-fns'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
@@ -56,12 +57,41 @@ export default function BacktestDetail() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const { data: backtest, isLoading, error } = useQuery({
+  const { data: backtestFromQuery, isLoading, error } = useQuery({
     queryKey: ['backtest', id],
     queryFn: () => api.getBacktest(id),
-    refetchInterval: (data) => {
-      return data?.status === 'running' || data?.status === 'pending' ? 2000 : false
-    },
+  })
+
+  // Enable SSE stream only when status is running or pending
+  const isActiveStatus = backtestFromQuery?.status === 'running' || backtestFromQuery?.status === 'pending'
+  const { data: streamData, isConnected } = useBacktestStream(id, isActiveStatus)
+
+  // Merge stream data with query data - stream takes precedence for progress fields
+  const backtest = backtestFromQuery ? {
+    ...backtestFromQuery,
+    ...(streamData || {}),
+  } : null
+
+  // Update React Query cache when stream data arrives
+  useEffect(() => {
+    if (streamData && backtestFromQuery) {
+      queryClient.setQueryData(['backtest', id], (prev) => ({
+        ...prev,
+        ...streamData,
+      }))
+    }
+  }, [streamData, backtestFromQuery, id, queryClient])
+
+  // Configure polling: disabled when SSE is connected, otherwise poll when active
+  const refetchInterval = isConnected ? false : (isActiveStatus ? 2000 : false)
+  useQuery({
+    queryKey: ['backtest-poll', id],
+    queryFn: () => api.getBacktest(id).then((data) => {
+      queryClient.setQueryData(['backtest', id], data)
+      return data
+    }),
+    refetchInterval,
+    enabled: !isConnected && isActiveStatus,
   })
 
   const { data: results } = useQuery({
@@ -220,9 +250,18 @@ export default function BacktestDetail() {
               <p className="text-blue-800 font-medium">
                 Processing historical data for {backtest.asset}...
               </p>
-              <p className="text-sm text-blue-600 mt-1">
-                Elapsed time: {formatElapsedTime(elapsedSeconds)}
-              </p>
+              <div className="flex items-center gap-3 mt-1">
+                <p className="text-sm text-blue-600">
+                  Elapsed time: {formatElapsedTime(elapsedSeconds)}
+                </p>
+                {/* Connection status indicator */}
+                <div className="flex items-center gap-1.5">
+                  <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'}`}></div>
+                  <span className="text-xs text-gray-500">
+                    {isConnected ? 'Connected' : 'Reconnecting'}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
