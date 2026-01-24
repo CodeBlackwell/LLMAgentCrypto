@@ -109,6 +109,39 @@ export default function NewBacktest() {
 
   const hasValidationErrors = Object.values(validationErrors).some(error => error !== '')
 
+  // Calculate trading days and estimated duration
+  const calculateTradingDays = (startDate, endDate) => {
+    if (!startDate || !endDate) return 0
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    if (end <= start) return 0
+
+    let tradingDays = 0
+    const current = new Date(start)
+    while (current <= end) {
+      const dayOfWeek = current.getDay()
+      // Count weekdays only (Monday=1 through Friday=5)
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        tradingDays++
+      }
+      current.setDate(current.getDate() + 1)
+    }
+    return tradingDays
+  }
+
+  const formatDuration = (seconds) => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    if (minutes === 0) {
+      return `${remainingSeconds}s`
+    }
+    return `${minutes}m ${remainingSeconds}s`
+  }
+
+  const tradingDays = calculateTradingDays(form.start_date, form.end_date)
+  const estimatedSeconds = tradingDays * 2  // ~2 seconds per trading day
+  const estimatedDuration = formatDuration(estimatedSeconds)
+
   const { data: strategies } = useQuery({
     queryKey: ['strategies'],
     queryFn: api.getStrategies,
@@ -275,6 +308,20 @@ export default function NewBacktest() {
             )}
           </div>
         </div>
+
+        {/* Estimated Duration */}
+        {tradingDays > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-blue-800 font-medium">
+                Estimated duration: {estimatedDuration} ({tradingDays} trading days)
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Trading Parameters */}
         <div className="grid grid-cols-3 gap-4">

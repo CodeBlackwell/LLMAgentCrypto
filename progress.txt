@@ -287,3 +287,42 @@
   - z-10 ensures tooltip appears above other elements
   - npm run build and all 227 tests continue to pass
 ---
+
+## Iteration 18 - US-018: Add client-side form validation
+- What was implemented:
+  - Added validationErrors state to track field-level errors
+  - Created validateField() function with switch statement for all validated fields
+  - Added validateAllFields() to validate all fields at once (for submit)
+  - Added handleBlur() function to validate on blur with cross-field date validation
+  - Added hasValidationErrors computed value for submit button state
+  - Added onBlur handlers to strategy_name, start_date, end_date, initial_cash, threshold, cash_at_risk
+  - Added inline error messages (<p className="mt-1 text-sm text-red-600">) below each validated field
+  - Added border-red-500 class to inputs with errors
+  - Disabled submit button when hasValidationErrors is true (with opacity-50 styling)
+- Files changed:
+  - trading_lab/web/src/pages/NewBacktest.jsx (added validation state, functions, and UI)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Date validation requires cross-field checks - when blurring start_date, also revalidate end_date
+  - Use formData parameter in validateField to get current form state for cross-field validation
+  - Tailwind border-red-500 works well for input error styling
+  - All 227 tests continue to pass
+---
+
+## Iteration 19 - US-019: Add estimated duration display
+- What was implemented:
+  - Added `calculateTradingDays()` function to count weekdays between start and end dates
+  - Added `formatDuration()` function to format seconds as "Xm Ys" string
+  - Added blue informational banner showing "Estimated duration: Xm Ys (N trading days)"
+  - Banner only shows when tradingDays > 0 (valid date range)
+  - Duration updates dynamically as dates change (recalculated on every render)
+  - Uses ~2 seconds per trading day estimation
+- Files changed:
+  - trading_lab/web/src/pages/NewBacktest.jsx (added functions and banner section)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Trading day calculation excludes weekends (Saturday=0, Sunday=6)
+  - Tailwind blue-50/blue-200 color scheme works well for informational banners
+  - Clock icon SVG adds visual clarity to the duration estimate
+  - All 227 tests continue to pass
+---

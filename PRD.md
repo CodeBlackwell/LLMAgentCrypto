@@ -274,12 +274,12 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a user, I want to know approximately how long my backtest will take before I start it.
 
 **Acceptance Criteria:**
-- [ ] In `trading_lab/web/src/pages/NewBacktest.jsx`, add duration estimate section
-- [ ] Calculate based on date range (~2 seconds per trading day)
-- [ ] Display: "Estimated duration: Xm Ys (N trading days)"
-- [ ] Updates dynamically as dates change
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] In `trading_lab/web/src/pages/NewBacktest.jsx`, add duration estimate section
+- [x] Calculate based on date range (~2 seconds per trading day)
+- [x] Display: "Estimated duration: Xm Ys (N trading days)"
+- [x] Updates dynamically as dates change
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ---
 
