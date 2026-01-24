@@ -63,6 +63,13 @@ class BacktestResponse(BaseModel):
     status: str
     created_at: Optional[str]
     completed_at: Optional[str]
+    # Progress tracking fields
+    progress_percent: Optional[float] = None
+    progress_message: Optional[str] = None
+    current_date: Optional[str] = None
+    total_days: Optional[int] = None
+    processed_days: Optional[int] = None
+    error_message: Optional[str] = None
 
 
 class BacktestListResponse(BaseModel):

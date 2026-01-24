@@ -50,15 +50,15 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a developer, I need the API response schema to include progress fields so the frontend can display them.
 
 **Acceptance Criteria:**
-- [ ] Add to `BacktestResponse` in `trading_lab/api/schemas.py`:
+- [x] Add to `BacktestResponse` in `trading_lab/api/schemas.py`:
   - `progress_percent: Optional[float] = None`
   - `progress_message: Optional[str] = None`
   - `current_date: Optional[str] = None`
   - `total_days: Optional[int] = None`
   - `processed_days: Optional[int] = None`
   - `error_message: Optional[str] = None`
-- [ ] Verify GET `/backtests/{id}` returns progress fields
-- [ ] Typecheck passes
+- [x] Verify GET `/backtests/{id}` returns progress fields
+- [x] Typecheck passes
 
 ---
 
