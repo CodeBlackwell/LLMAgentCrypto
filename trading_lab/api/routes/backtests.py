@@ -10,6 +10,7 @@ from ...core.config import BacktestConfig
 from ...storage.database import get_db
 from ...storage.repository import BacktestRepository, TradeRepository
 from ...backtest.runner import get_runner
+from ...strategies.registry import list_strategies
 from ..schemas import (
     BacktestRequest,
     BacktestResponse,
@@ -27,6 +28,15 @@ async def create_backtest(request: BacktestRequest, background_tasks: Background
     The backtest runs in the background. Use GET /backtests/{id}
     to check status.
     """
+    # Validate strategy exists in registry
+    available_strategies = list_strategies()
+    if request.strategy_name not in available_strategies:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Strategy '{request.strategy_name}' not found. "
+            f"Available strategies: {', '.join(available_strategies)}"
+        )
+
     # Convert request to config
     config = BacktestConfig(
         strategy_name=request.strategy_name,

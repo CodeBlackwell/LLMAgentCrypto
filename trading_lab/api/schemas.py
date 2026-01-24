@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date
 from typing import Optional, Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 # ============== Strategy Schemas ==============
@@ -32,7 +32,7 @@ class BacktestRequest(BaseModel):
     asset_type: Literal["crypto", "stock", "forex"] = Field(default="crypto")
     start_date: date = Field(..., description="Backtest start date")
     end_date: date = Field(..., description="Backtest end date")
-    initial_cash: float = Field(default=100_000.0, ge=0)
+    initial_cash: float = Field(default=100_000.0, ge=100)
 
     # Strategy parameters
     signal_provider: Optional[str] = Field(default=None)
@@ -41,6 +41,21 @@ class BacktestRequest(BaseModel):
 
     # Exchange settings
     exchange: str = Field(default="kraken")
+
+    @model_validator(mode="after")
+    def validate_date_range(self) -> "BacktestRequest":
+        """Validate that end_date is after start_date and range <= 2 years."""
+        if self.end_date <= self.start_date:
+            raise ValueError("End date must be after start date")
+
+        # Calculate days between dates
+        days = (self.end_date - self.start_date).days
+        if days > 730:
+            raise ValueError(
+                f"Date range must be <= 2 years (730 days). Got {days} days."
+            )
+
+        return self
 
 
 class BacktestResponse(BaseModel):

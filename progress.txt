@@ -110,3 +110,23 @@
   - SSE format: "event: {type}\ndata: {json}\n\n"
   - All 227 tests continue to pass
 ---
+
+## Iteration 8 - US-008: Add server-side validation for backtest creation
+- What was implemented:
+  - Added model_validator to BacktestRequest schema for date range validation:
+    - End date must be after start date
+    - Date range must be <= 730 days (2 years)
+  - Changed initial_cash Field from ge=0 to ge=100
+  - Added strategy registry validation in POST /backtests route (checks list_strategies())
+  - Returns 422 with descriptive error messages for validation failures
+  - Threshold and position_size (cash_at_risk) already had ge=0.0 le=1.0 constraints
+- Files changed:
+  - trading_lab/api/schemas.py (added model_validator, changed initial_cash constraint)
+  - trading_lab/api/routes/backtests.py (added strategy existence check)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Pydantic v2 uses model_validator(mode="after") for cross-field validation
+  - Field constraints (ge, le) are most efficient for single-field validation
+  - Strategy validation requires registry access, better done at route level not schema
+  - All 227 tests continue to pass
+---

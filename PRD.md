@@ -119,15 +119,15 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a user, I want clear error messages when I submit invalid backtest parameters.
 
 **Acceptance Criteria:**
-- [ ] Add validation in `POST /backtests` endpoint or schema:
+- [x] Add validation in `POST /backtests` endpoint or schema:
   - Strategy must exist in registry
   - End date must be after start date
   - Date range must be <= 2 years (730 days)
   - Initial cash must be >= 100
   - Threshold must be between 0 and 1
   - Position size must be between 0 and 1
-- [ ] Return 422 with descriptive error messages for each validation failure
-- [ ] Typecheck passes
+- [x] Return 422 with descriptive error messages for each validation failure
+- [x] Typecheck passes
 
 ---
 
