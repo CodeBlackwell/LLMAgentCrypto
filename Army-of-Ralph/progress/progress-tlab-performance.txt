@@ -1,0 +1,25 @@
+# Progress: tlab-performance
+
+## Status
+- [ ] Started
+- [ ] In Progress
+- [ ] Complete
+
+## Tasks
+
+### US-009: Increase worker pool and optimize runner
+- [ ] Change max_workers=2 to max_workers=4 in runner.py
+- [ ] Typecheck passes
+
+### US-010: Create data cache module
+- [ ] Create new file `trading_lab/backtest/cache.py`
+- [ ] Implement DataCache class with get() method
+- [ ] Implement set() method
+- [ ] Implement clear() method
+- [ ] Use pickle files in `.backtest_cache/` directory
+- [ ] Cache key based on asset, exchange, and date range
+- [ ] Add `.backtest_cache/` to `.gitignore`
+- [ ] Typecheck passes
+
+## Learnings
+(Discovered during implementation)

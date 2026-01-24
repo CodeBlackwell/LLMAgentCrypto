@@ -1,0 +1,34 @@
+# Progress: tlab-progress
+
+## Status
+- [ ] Started
+- [ ] In Progress
+- [ ] Complete
+
+## Tasks
+
+### US-004: Create ProgressTracker module
+- [ ] Create new file `trading_lab/backtest/progress.py`
+- [ ] Implement ProgressTracker class with __init__ method
+- [ ] Implement update() method with percent calculation
+- [ ] Implement set_phase() method
+- [ ] Implement complete() method
+- [ ] Add 500ms throttling to avoid DB thrashing
+- [ ] Typecheck passes
+
+### US-005: Integrate progress tracking into backtest engine
+- [ ] Modify BacktestEngine.__init__() to accept progress_tracker parameter
+- [ ] Calculate total_days from date range at start of run
+- [ ] Call progress_tracker.update() during simulation loop
+- [ ] Call progress_tracker.set_phase() for stage transitions
+- [ ] Typecheck passes
+
+### US-006: Wire progress tracker into BacktestRunner
+- [ ] Modify BacktestRunner._run_backtest()
+- [ ] Create ProgressTracker instance before engine execution
+- [ ] Pass tracker to BacktestEngine
+- [ ] Update progress to 100% on successful completion
+- [ ] Typecheck passes
+
+## Learnings
+(Discovered during implementation)

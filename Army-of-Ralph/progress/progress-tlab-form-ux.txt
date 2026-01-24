@@ -1,0 +1,52 @@
+# Progress: tlab-form-ux
+
+## Status
+- [ ] Started
+- [ ] In Progress
+- [ ] Complete
+
+## Tasks
+
+### US-017: Add tooltips to form fields
+- [ ] Add tooltip icons next to form labels
+- [ ] Tooltip for Threshold field
+- [ ] Tooltip for Position Size field
+- [ ] Tooltip for Initial Cash field
+- [ ] Tooltip appears on hover with dark background
+- [ ] Typecheck passes
+- [ ] Verify in browser
+
+### US-018: Add client-side form validation
+- [ ] Add validationErrors state
+- [ ] Validate on blur and on submit
+- [ ] Validate strategy is selected
+- [ ] Validate end date > start date
+- [ ] Validate date range <= 2 years
+- [ ] Validate initial cash >= $100
+- [ ] Validate threshold between 0 and 1
+- [ ] Validate position size between 0 and 1
+- [ ] Show inline error messages (red text)
+- [ ] Disable submit button when any validation fails
+- [ ] Typecheck passes
+- [ ] Verify in browser
+
+### US-019: Add estimated duration display
+- [ ] Add duration estimate section
+- [ ] Calculate based on date range (~2 seconds per trading day)
+- [ ] Display: "Estimated duration: Xm Ys (N trading days)"
+- [ ] Updates dynamically as dates change
+- [ ] Typecheck passes
+- [ ] Verify in browser
+
+### US-020: Add date picker presets
+- [ ] Change date inputs to type="date"
+- [ ] Add "Last 3 months" preset button
+- [ ] Add "Last 6 months" preset button
+- [ ] Add "YTD" preset button
+- [ ] Add "Last year" preset button
+- [ ] Clicking preset populates both date fields
+- [ ] Typecheck passes
+- [ ] Verify in browser
+
+## Learnings
+(Discovered during implementation)

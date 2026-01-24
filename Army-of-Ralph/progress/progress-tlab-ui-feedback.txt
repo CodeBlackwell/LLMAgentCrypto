@@ -1,0 +1,44 @@
+# Progress: tlab-ui-feedback
+
+## Status
+- [ ] Started
+- [ ] In Progress
+- [ ] Complete
+
+## Tasks
+
+### US-011: Display error banner for failed backtests
+- [ ] Add error banner when backtest.status === 'failed'
+- [ ] Banner has red background with error icon
+- [ ] Display error_message in pre tag
+- [ ] Banner appears at top of results section
+- [ ] Typecheck passes
+- [ ] Verify in browser
+
+### US-012: Add loading spinner for BacktestDetail
+- [ ] Replace "Loading backtest..." text with spinner
+- [ ] Show centered spinner animation using Tailwind CSS
+- [ ] Spinner visible until data loads
+- [ ] Typecheck passes
+- [ ] Verify in browser
+
+### US-013: Add running state indicator with elapsed time
+- [ ] Add blue banner when isRunning
+- [ ] Include spinning loader animation
+- [ ] Show "Processing historical data for {asset}..."
+- [ ] Display elapsed time since created_at
+- [ ] Update elapsed time every second
+- [ ] Typecheck passes
+- [ ] Verify in browser
+
+### US-014: Add progress bar display
+- [ ] Add progress bar when running
+- [ ] Progress bar shows progress_percent with animation
+- [ ] Display percentage as large bold text
+- [ ] Show "Day X/Y" using processed_days and total_days
+- [ ] Show progress_message below progress bar
+- [ ] Typecheck passes
+- [ ] Verify in browser
+
+## Learnings
+(Discovered during implementation)

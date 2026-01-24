@@ -1,0 +1,34 @@
+# Progress: tlab-foundation
+
+## Status
+- [ ] Started
+- [ ] In Progress
+- [ ] Complete
+
+## Tasks
+
+### US-001: Add progress fields to database schema
+- [ ] Add `progress_percent` column to BacktestRun model
+- [ ] Add `progress_message` column to BacktestRun model
+- [ ] Add `current_date` column to BacktestRun model
+- [ ] Add `total_days` column to BacktestRun model
+- [ ] Add `processed_days` column to BacktestRun model
+- [ ] Update `to_dict()` method to include all progress fields
+- [ ] Ensure `error_message` is included in `to_dict()` output
+- [ ] Application starts without errors
+- [ ] Typecheck passes
+
+### US-002: Add repository method for progress updates
+- [ ] Add `update_progress()` method to BacktestRepository
+- [ ] Method updates only non-None fields
+- [ ] Method returns updated BacktestRun or None if not found
+- [ ] Typecheck passes
+
+### US-003: Add progress fields to API schema
+- [ ] Add progress fields to BacktestResponse schema
+- [ ] Add error_message field to BacktestResponse schema
+- [ ] Verify GET `/backtests/{id}` returns progress fields
+- [ ] Typecheck passes
+
+## Learnings
+(Discovered during implementation)

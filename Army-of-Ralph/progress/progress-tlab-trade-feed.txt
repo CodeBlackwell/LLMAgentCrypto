@@ -1,0 +1,31 @@
+# Progress: tlab-trade-feed
+
+## Status
+- [ ] Started
+- [ ] In Progress
+- [ ] Complete
+
+## Tasks
+
+### US-021: Create LiveTradeFeed component
+- [ ] Create trading_lab/web/src/components/LiveTradeFeed.jsx
+- [ ] Dark terminal-style design (gray-900 background, monospace font)
+- [ ] Show last 10 trades with auto-scroll to bottom
+- [ ] Green text for BUY trades
+- [ ] Red text for SELL trades
+- [ ] Display: side, quantity, price, timestamp
+- [ ] Show "Waiting for trades..." when empty
+- [ ] Typecheck passes
+- [ ] Verify in browser
+
+### US-022: Integrate LiveTradeFeed in BacktestDetail
+- [ ] Import LiveTradeFeed in BacktestDetail.jsx
+- [ ] Show component only when isRunning is true
+- [ ] Pass trades from SSE stream to component
+- [ ] Position below progress bar
+- [ ] Hide when backtest completes
+- [ ] Typecheck passes
+- [ ] Verify in browser
+
+## Learnings
+(Discovered during implementation)

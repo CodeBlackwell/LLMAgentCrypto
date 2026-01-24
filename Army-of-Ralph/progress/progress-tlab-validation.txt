@@ -1,0 +1,21 @@
+# Progress: tlab-validation
+
+## Status
+- [ ] Started
+- [ ] In Progress
+- [ ] Complete
+
+## Tasks
+
+### US-008: Add server-side validation for backtest creation
+- [ ] Validate strategy exists in registry
+- [ ] Validate end date is after start date
+- [ ] Validate date range <= 2 years (730 days)
+- [ ] Validate initial cash >= 100
+- [ ] Validate threshold between 0 and 1
+- [ ] Validate position size between 0 and 1
+- [ ] Return 422 with descriptive error messages
+- [ ] Typecheck passes
+
+## Learnings
+(Discovered during implementation)

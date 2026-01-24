@@ -1,0 +1,24 @@
+# Progress: tlab-sse-backend
+
+## Status
+- [ ] Started
+- [ ] In Progress
+- [ ] Complete
+
+## Tasks
+
+### US-007: Add SSE streaming endpoint
+- [ ] Add GET /backtests/{backtest_id}/stream endpoint
+- [ ] Return StreamingResponse with media_type="text/event-stream"
+- [ ] Emit event type: progress
+- [ ] Emit event type: trades
+- [ ] Emit event type: complete
+- [ ] Emit event type: error
+- [ ] Poll database every 500ms, emit only on changes
+- [ ] Auto-close stream when status is terminal
+- [ ] Include Cache-Control: no-cache header
+- [ ] Include Connection: keep-alive header
+- [ ] Typecheck passes
+
+## Learnings
+(Discovered during implementation)

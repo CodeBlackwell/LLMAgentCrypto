@@ -1,0 +1,37 @@
+# Progress: tlab-sse-frontend
+
+## Status
+- [ ] Started
+- [ ] In Progress
+- [ ] Complete
+
+## Tasks
+
+### US-015: Create SSE hook for real-time updates
+- [ ] Create trading_lab/web/src/hooks/useBacktestStream.js
+- [ ] Hook signature: useBacktestStream(backtestId, enabled)
+- [ ] Returns { data, error, isConnected }
+- [ ] Uses native EventSource API
+- [ ] Implements exponential backoff (1s, 2s, 4s, 8s, max 30s)
+- [ ] Cleans up connection on unmount or when disabled
+- [ ] Typecheck passes
+
+### US-016: Integrate SSE hook in BacktestDetail
+- [ ] Import and use useBacktestStream in BacktestDetail.jsx
+- [ ] Enable stream only when status is running or pending
+- [ ] Merge stream data with React Query cache
+- [ ] Show connection status indicator (green/yellow dot)
+- [ ] Disable polling when SSE is connected
+- [ ] Typecheck passes
+- [ ] Verify in browser
+
+### US-023: Optimize polling intervals
+- [ ] Update refetchInterval: running = 500ms
+- [ ] Update refetchInterval: pending = 1000ms
+- [ ] Update refetchInterval: terminal states = false
+- [ ] Polling disabled when SSE is connected
+- [ ] Typecheck passes
+- [ ] Verify in browser
+
+## Learnings
+(Discovered during implementation)
