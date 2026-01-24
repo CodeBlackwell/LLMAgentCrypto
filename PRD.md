@@ -212,13 +212,13 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a developer, I need a React hook to consume the SSE stream for real-time backtest updates.
 
 **Acceptance Criteria:**
-- [ ] Create `trading_lab/web/src/hooks/useBacktestStream.js`
-- [ ] Hook signature: `useBacktestStream(backtestId, enabled)`
-- [ ] Returns `{ data, error, isConnected }`
-- [ ] Uses native `EventSource` API
-- [ ] Implements automatic reconnection with exponential backoff (1s, 2s, 4s, 8s, max 30s)
-- [ ] Cleans up connection on unmount or when disabled
-- [ ] Typecheck passes
+- [x] Create `trading_lab/web/src/hooks/useBacktestStream.js`
+- [x] Hook signature: `useBacktestStream(backtestId, enabled)`
+- [x] Returns `{ data, error, isConnected }`
+- [x] Uses native `EventSource` API
+- [x] Implements automatic reconnection with exponential backoff (1s, 2s, 4s, 8s, max 30s)
+- [x] Cleans up connection on unmount or when disabled
+- [x] Typecheck passes
 
 ---
 

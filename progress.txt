@@ -232,3 +232,23 @@
   - Progress bar should be nested inside existing running state banner for visual cohesion
   - All 227 tests continue to pass
 ---
+
+## Iteration 15 - US-015: Create SSE hook for real-time updates
+- What was implemented:
+  - Created `trading_lab/web/src/hooks/useBacktestStream.js` React hook
+  - Hook signature: `useBacktestStream(backtestId, enabled)` returns `{ data, error, isConnected }`
+  - Uses native EventSource API to connect to `/api/backtests/{id}/stream` endpoint
+  - Handles SSE event types: progress, trades, complete, error
+  - Implements exponential backoff reconnection: 1s, 2s, 4s, 8s, up to 30s max
+  - Proper cleanup on unmount (clears timeout and closes EventSource)
+  - Merges incoming data with previous state for incremental updates
+- Files changed:
+  - trading_lab/web/src/hooks/useBacktestStream.js (new file)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - EventSource.addEventListener() handles named events from SSE stream (progress, trades, etc.)
+  - useCallback with ref-based state avoids stale closure issues in reconnection logic
+  - hooks/ directory existed but was empty - first hook in the project
+  - npm run build verifies JSX/JS compilation for frontend code
+  - All 227 tests continue to pass
+---
