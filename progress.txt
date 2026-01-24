@@ -18,3 +18,16 @@
   - SQLite database file (trading_lab.db) must be deleted when schema changes since there's no migration tool
   - All 227 tests pass after schema update
 ---
+
+## Iteration 2 - US-002: Add repository method for progress updates
+- What was implemented:
+  - Added `update_progress()` method to `BacktestRepository` class
+  - Method updates progress_percent (always), progress_message, current_date, processed_days (only if non-None/non-empty)
+  - Method returns updated BacktestRun or None if not found
+- Files changed:
+  - trading_lab/storage/repository.py
+- Learnings for future iterations:
+  - Use .venv: `source .venv/bin/activate` before running pytest
+  - Tests are located at trading_lab/tests/ not tests/
+  - Follow existing patterns in repository (like update_status and update_results methods)
+---

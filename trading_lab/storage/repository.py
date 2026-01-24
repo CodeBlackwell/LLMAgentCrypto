@@ -89,6 +89,37 @@ class BacktestRepository:
                 run.completed_at = datetime.utcnow()
         return run
 
+    def update_progress(
+        self,
+        backtest_id: int,
+        progress_percent: float,
+        progress_message: str = "",
+        current_date: datetime | None = None,
+        processed_days: int | None = None,
+    ) -> Optional[BacktestRun]:
+        """Update backtest progress.
+
+        Args:
+            backtest_id: ID of the backtest to update
+            progress_percent: Progress percentage (0-100)
+            progress_message: Optional status message
+            current_date: Current simulation date
+            processed_days: Number of days processed so far
+
+        Returns:
+            Updated BacktestRun or None if not found
+        """
+        run = self.get(backtest_id)
+        if run:
+            run.progress_percent = progress_percent
+            if progress_message:
+                run.progress_message = progress_message
+            if current_date is not None:
+                run.current_date = current_date
+            if processed_days is not None:
+                run.processed_days = processed_days
+        return run
+
     def update_results(
         self,
         backtest_id: int,

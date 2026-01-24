@@ -38,11 +38,11 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a developer, I need a repository method to update backtest progress so the engine can persist progress state.
 
 **Acceptance Criteria:**
-- [ ] Add `update_progress()` method to `BacktestRepository` in `trading_lab/storage/repository.py`
-- [ ] Method signature: `update_progress(self, backtest_id: str, progress_percent: float, progress_message: str = "", current_date: datetime = None, processed_days: int = None) -> Optional[BacktestRun]`
-- [ ] Method updates only non-None fields
-- [ ] Method returns updated BacktestRun or None if not found
-- [ ] Typecheck passes
+- [x] Add `update_progress()` method to `BacktestRepository` in `trading_lab/storage/repository.py`
+- [x] Method signature: `update_progress(self, backtest_id: str, progress_percent: float, progress_message: str = "", current_date: datetime = None, processed_days: int = None) -> Optional[BacktestRun]`
+- [x] Method updates only non-None fields
+- [x] Method returns updated BacktestRun or None if not found
+- [x] Typecheck passes
 
 ---
 
