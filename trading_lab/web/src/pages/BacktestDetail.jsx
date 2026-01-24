@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../api/client'
@@ -36,6 +37,20 @@ function MetricCard({ label, value, subtext, positive }) {
   )
 }
 
+function formatElapsedTime(seconds) {
+  const hrs = Math.floor(seconds / 3600)
+  const mins = Math.floor((seconds % 3600) / 60)
+  const secs = seconds % 60
+
+  if (hrs > 0) {
+    return `${hrs}h ${mins}m ${secs}s`
+  } else if (mins > 0) {
+    return `${mins}m ${secs}s`
+  } else {
+    return `${secs}s`
+  }
+}
+
 export default function BacktestDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -69,6 +84,32 @@ export default function BacktestDetail() {
       queryClient.invalidateQueries({ queryKey: ['backtest', id] })
     },
   })
+
+  // Elapsed time for running backtests
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+
+  useEffect(() => {
+    if (!backtest?.created_at) return
+
+    const isActive = backtest.status === 'running' || backtest.status === 'pending'
+    if (!isActive) {
+      setElapsedSeconds(0)
+      return
+    }
+
+    // Calculate initial elapsed time
+    const createdAt = new Date(backtest.created_at)
+    const updateElapsed = () => {
+      const now = new Date()
+      const diffSeconds = Math.floor((now - createdAt) / 1000)
+      setElapsedSeconds(diffSeconds)
+    }
+
+    updateElapsed()
+    const interval = setInterval(updateElapsed, 1000)
+
+    return () => clearInterval(interval)
+  }, [backtest?.created_at, backtest?.status])
 
   if (isLoading) {
     return (
@@ -165,6 +206,23 @@ export default function BacktestDetail() {
               <pre className="mt-2 text-sm text-red-700 whitespace-pre-wrap font-mono bg-red-100 rounded p-3 overflow-x-auto">
                 {backtest.error_message}
               </pre>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Running State Indicator */}
+      {isRunning && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-200 border-t-blue-600 flex-shrink-0"></div>
+            <div className="flex-1">
+              <p className="text-blue-800 font-medium">
+                Processing historical data for {backtest.asset}...
+              </p>
+              <p className="text-sm text-blue-600 mt-1">
+                Elapsed time: {formatElapsedTime(elapsedSeconds)}
+              </p>
             </div>
           </div>
         </div>

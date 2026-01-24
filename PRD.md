@@ -185,12 +185,12 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a user, I want to see that my backtest is running and how long it's been processing.
 
 **Acceptance Criteria:**
-- [ ] In `trading_lab/web/src/pages/BacktestDetail.jsx`, add blue banner when `isRunning`
-- [ ] Include spinning loader animation
-- [ ] Show "Processing historical data for {asset}..."
-- [ ] Display elapsed time since `created_at` (updates every second)
-- [ ] Typecheck passes
-- [ ] Verify changes work in browser
+- [x] In `trading_lab/web/src/pages/BacktestDetail.jsx`, add blue banner when `isRunning`
+- [x] Include spinning loader animation
+- [x] Show "Processing historical data for {asset}..."
+- [x] Display elapsed time since `created_at` (updates every second)
+- [x] Typecheck passes
+- [x] Verify changes work in browser
 
 ---
 
