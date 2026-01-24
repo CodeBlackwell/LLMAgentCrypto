@@ -1,7 +1,9 @@
 """Backtest engine wrapper around Lumibot."""
 
+from __future__ import annotations
+
 from datetime import datetime
-from typing import Type, Optional
+from typing import TYPE_CHECKING, Optional
 import logging
 
 from lumibot.backtesting import CcxtBacktesting
@@ -12,6 +14,9 @@ from ..core.config import BacktestConfig
 from ..strategies.registry import get_strategy
 from ..storage.database import get_db
 from ..storage.repository import BacktestRepository, TradeRepository, DailyStatRepository
+
+if TYPE_CHECKING:
+    from .progress import ProgressTracker
 
 logger = logging.getLogger(__name__)
 
@@ -35,15 +40,18 @@ class BacktestEngine:
         self,
         min_timestep: str = "day",
         trading_fees: Optional[dict] = None,
+        progress_tracker: Optional[ProgressTracker] = None,
     ):
         """Initialize backtest engine.
 
         Args:
             min_timestep: Minimum time granularity ("day", "hour", "minute")
             trading_fees: Dict with "buy" and "sell" fee percentages
+            progress_tracker: Optional progress tracker for reporting execution progress
         """
         self.min_timestep = min_timestep
         self.trading_fees = trading_fees or {}
+        self.progress_tracker = progress_tracker
 
     def _build_fees(self) -> tuple[list, list]:
         """Build trading fee objects."""
@@ -106,6 +114,9 @@ class BacktestEngine:
         # Build fees
         buy_fees, sell_fees = self._build_fees()
 
+        # Calculate total_days for progress tracking
+        total_days = (config.end_date - config.start_date).days + 1
+
         # Create database record if saving
         backtest_id = None
         if save_to_db:
@@ -125,7 +136,23 @@ class BacktestEngine:
                 backtest_id = run.id
                 repo.update_status(backtest_id, "running")
 
+                # Set total_days in database for progress display
+                if self.progress_tracker:
+                    repo.update_progress(
+                        backtest_id=backtest_id,
+                        progress_percent=0.0,
+                        progress_message="Initializing...",
+                        processed_days=0,
+                    )
+                    # Update total_days via direct update since it's not in update_progress
+                    run.total_days = total_days
+                    db.commit()
+
         try:
+            # Set phase for data fetching
+            if self.progress_tracker:
+                self.progress_tracker.set_phase("Fetching data...")
+
             # Run backtest
             kwargs = {"exchange_id": exchange_id}
             if buy_fees:
@@ -135,6 +162,11 @@ class BacktestEngine:
 
             # Skip benchmark comparison to avoid CCXT data fetch issues
             # The benchmark stats would fail if CCXT can't find data for the symbol
+            # Note: Lumibot handles data fetching and simulation internally
+            # Progress updates during simulation require strategy-level integration (see US-006)
+            if self.progress_tracker:
+                self.progress_tracker.set_phase("Simulating trades...")
+
             results, strat_obj = strategy_class.run_backtest(
                 CcxtBacktesting,
                 datetime.combine(config.start_date, datetime.min.time()),
@@ -149,6 +181,10 @@ class BacktestEngine:
                 stats_file=None,  # Don't write stats file
                 **kwargs,
             )
+
+            # Update progress tracker with final date after simulation completes
+            if self.progress_tracker:
+                self.progress_tracker.update(config.end_date, "Processing results...")
 
             # Extract results - handle dict format for max_drawdown
             max_dd = results.get("max_drawdown")

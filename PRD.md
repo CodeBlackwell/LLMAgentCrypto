@@ -81,11 +81,11 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a developer, I need the backtest engine to report progress so users see real-time updates.
 
 **Acceptance Criteria:**
-- [ ] Modify `BacktestEngine.__init__()` in `trading_lab/backtest/engine.py` to accept optional `progress_tracker` parameter
-- [ ] Calculate `total_days` from date range at start of run
-- [ ] Call `progress_tracker.update()` during simulation loop with current date
-- [ ] Call `progress_tracker.set_phase()` for stage transitions ("Fetching data...", "Simulating trades...")
-- [ ] Typecheck passes
+- [x] Modify `BacktestEngine.__init__()` in `trading_lab/backtest/engine.py` to accept optional `progress_tracker` parameter
+- [x] Calculate `total_days` from date range at start of run
+- [x] Call `progress_tracker.update()` during simulation loop with current date
+- [x] Call `progress_tracker.set_phase()` for stage transitions ("Fetching data...", "Simulating trades...")
+- [x] Typecheck passes
 
 ---
 
