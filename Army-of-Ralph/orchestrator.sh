@@ -45,16 +45,25 @@ check_agent_complete() {
 # Progress tracking functions
 count_tasks() {
     local file=$1
-    local total=$(grep -c '^\s*- \[' "$file" 2>/dev/null || echo 0)
-    local done=$(grep -c '^\s*- \[x\]' "$file" 2>/dev/null || echo 0)
-    echo "$done/$total"
+    local total=0
+    local done=0
+    if [[ -f "$file" ]]; then
+        total=$(grep -c '^[[:space:]]*- \[' "$file" 2>/dev/null) || total=0
+        done=$(grep -c '^[[:space:]]*- \[x\]' "$file" 2>/dev/null) || done=0
+    fi
+    # Ensure clean output without newlines
+    printf "%d/%d" "$done" "$total"
 }
 
 get_progress_percent() {
     local file=$1
-    local total=$(grep -c '^\s*- \[' "$file" 2>/dev/null || echo 1)
-    local done=$(grep -c '^\s*- \[x\]' "$file" 2>/dev/null || echo 0)
-    if [[ $total -eq 0 ]]; then
+    local total=0
+    local done=0
+    if [[ -f "$file" ]]; then
+        total=$(grep -c '^[[:space:]]*- \[' "$file" 2>/dev/null) || total=0
+        done=$(grep -c '^[[:space:]]*- \[x\]' "$file" 2>/dev/null) || done=0
+    fi
+    if [[ "$total" -eq 0 ]] || [[ -z "$total" ]]; then
         echo 0
     else
         echo $((done * 100 / total))
