@@ -144,15 +144,15 @@ Enhance the Trading Lab backtest execution experience to be more verbose, visual
 **Description:** As a developer, I need to cache historical price data to avoid redundant API calls.
 
 **Acceptance Criteria:**
-- [ ] Create new file `trading_lab/backtest/cache.py`
-- [ ] `DataCache` class with:
+- [x] Create new file `trading_lab/backtest/cache.py`
+- [x] `DataCache` class with:
   - `get(asset: str, exchange: str, start_date: date, end_date: date) -> Optional[DataFrame]`
   - `set(asset: str, exchange: str, start_date: date, end_date: date, data: DataFrame) -> None`
   - `clear() -> None`
-- [ ] Use pickle files in `.backtest_cache/` directory
-- [ ] Cache key based on asset, exchange, and date range
-- [ ] Add `.backtest_cache/` to `.gitignore`
-- [ ] Typecheck passes
+- [x] Use pickle files in `.backtest_cache/` directory
+- [x] Cache key based on asset, exchange, and date range
+- [x] Add `.backtest_cache/` to `.gitignore`
+- [x] Typecheck passes
 
 ---
 

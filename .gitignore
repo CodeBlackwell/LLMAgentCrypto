@@ -31,3 +31,6 @@ e2e/playwright-report/
 
 *CLAUDE.md
 logs/*
+
+# Backtest cache
+.backtest_cache/
