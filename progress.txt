@@ -346,3 +346,54 @@
   - YTD uses template literal with current year: `${today.getFullYear()}-01-01`
   - All 227 tests continue to pass
 ---
+
+## Iteration 21 - US-021: Create LiveTradeFeed component
+- What was implemented:
+  - Created `trading_lab/web/src/components/LiveTradeFeed.jsx`
+  - Dark terminal-style design with gray-900 background and monospace font
+  - Shows last 10 trades using slice(-10) with auto-scroll via useRef/useEffect
+  - Color-coded: green (text-green-400) for BUY, red (text-red-400) for SELL
+  - Displays side, quantity, price, and timestamp for each trade
+  - Shows "Waiting for trades..." with animate-pulse when no trades
+  - Helper functions for formatting: formatTimestamp, formatPrice, formatQuantity
+- Files changed:
+  - trading_lab/web/src/components/LiveTradeFeed.jsx (new file)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - components/ directory created - first component in the project
+  - Use containerRef.scrollTop = containerRef.scrollHeight for auto-scroll
+  - Backend runs with: PYTHONPATH=. .venv/bin/uvicorn trading_lab.api.main:app
+  - npm run build and all 227 tests continue to pass
+---
+
+## Iteration 22 - US-022: Integrate LiveTradeFeed in BacktestDetail
+- What was implemented:
+  - Imported LiveTradeFeed component in BacktestDetail.jsx
+  - Added LiveTradeFeed below progress bar inside the isRunning conditional block
+  - Pass trades from SSE stream via `streamData?.trades || []`
+  - Component automatically hidden when backtest completes (inside isRunning conditional)
+- Files changed:
+  - trading_lab/web/src/pages/BacktestDetail.jsx (added import and component usage)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - streamData from useBacktestStream hook contains trades array when SSE 'trades' event is received
+  - Component placement inside isRunning block automatically handles show/hide logic
+  - npm run build and all 227 tests continue to pass
+---
+
+## Iteration 23 - US-023: Optimize polling intervals
+- What was implemented:
+  - Updated refetchInterval logic in BacktestDetail.jsx
+  - Created getPollingInterval() helper function for cleaner interval selection
+  - running status: 500ms (reduced from 2000ms for faster updates)
+  - pending status: 1000ms
+  - terminal states (completed, failed, cancelled): false (no polling)
+  - Polling disabled when SSE is connected (existing behavior preserved)
+- Files changed:
+  - trading_lab/web/src/pages/BacktestDetail.jsx (updated polling logic)
+  - PRD.md (marked task complete)
+- Learnings for future iterations:
+  - Using a helper function for polling interval keeps the logic readable
+  - React Query's refetchInterval accepts false to disable polling
+  - npm run build and all 227 tests continue to pass
+---
